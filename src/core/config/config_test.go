@@ -14,6 +14,7 @@
 package config
 
 import (
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"os"
 	"path"
 	"runtime"
@@ -40,9 +41,10 @@ func TestConfig(t *testing.T) {
 	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
 		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
+	logger.Debug(os.LookupEnv("ADMINSERVER_URL"))
 
 	secretKeyPath := "/tmp/secretkey"
-	_, err = test.GenerateKey(secretKeyPath)
+	 _,err = test.GenerateKey(secretKeyPath)
 	if err != nil {
 		t.Errorf("failed to generate secret key: %v", err)
 		return

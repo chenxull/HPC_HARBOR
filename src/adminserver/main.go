@@ -41,6 +41,7 @@ func (s *Server) Serve() error {
 
 func main() {
 	log.Info("initializing system configurations...")
+	// 完成所有系统配置文件的读取，存储工作
 	if err := syscfg.Init(); err != nil {
 		log.Fatalf("failed to initialize the system: %v", err)
 	}

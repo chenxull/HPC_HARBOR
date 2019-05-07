@@ -67,6 +67,7 @@ func (m *Manager) Load() (map[string]interface{}, error) {
 			cachedCfgs[k] = v
 		}
 
+		//将获取到的配置文件，存储到内从中。
 		if err = m.cache.Put(m.key, cachedCfgs,
 			time.Duration(expi)*time.Second); err != nil {
 			return nil, err

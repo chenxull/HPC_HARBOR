@@ -260,6 +260,7 @@ func parseStringToBool(str string) (interface{}, error) {
 func Init() (err error) {
 	// init database
 	envCfgs := map[string]interface{}{}
+	//将所有的配置都加载到 envCfgs 中
 	if err := LoadFromEnv(envCfgs, true); err != nil {
 		return err
 	}
@@ -274,6 +275,7 @@ func Init() (err error) {
 		return err
 	}
 
+	// 将读取出来的配置文件以 json 文件的形式存储在数据库中，并使用 AES 进行加密
 	if err := initCfgStore(); err != nil {
 		return err
 	}

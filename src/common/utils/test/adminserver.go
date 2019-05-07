@@ -120,7 +120,6 @@ func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 			StatusCode: http.StatusOK,
 		}),
 	})
-
 	return NewServer(m...), nil
 }
 
