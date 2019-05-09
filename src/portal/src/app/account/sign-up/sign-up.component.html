@@ -1,7 +1,9 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="false">
     <h3 class="modal-title">{{'SIGN_UP.TITLE' | translate}}</h3>
+    <!-- 取消确认界面   -->
     <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
     <div class="modal-body" style="overflow-y: hidden;">
+    <!-- 注册信息表单，以路由的形式插入进来        -->
         <new-user-form isSelfRegistration="true" (valueChange)="formValueChange($event)"></new-user-form>
     </div>
     <div class="modal-footer">

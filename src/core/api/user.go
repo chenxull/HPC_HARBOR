@@ -219,6 +219,7 @@ func (ua *UserAPI) Post() {
 	}
 
 	user := models.User{}
+	// 将发送来的 json 格式数据转换为 user 结构体类型
 	ua.DecodeJSONReq(&user)
 	err := validate(user)
 	if err != nil {

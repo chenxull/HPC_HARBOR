@@ -47,7 +47,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     redirectUrl: string = "";
     appConfig: AppConfig = new AppConfig();
     // Remeber me indicator
-    rememberMe: boolean = false;
+    rememberMe: boolean = true;
     rememberedName: string = "";
 
     customLoginBgImg: string;
@@ -213,7 +213,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // Implement interface
     // Watch the view change only when view is in error state
-    ngAfterViewChecked() {
+    ngAfterViewChecked() {2
         if (this.signInStatus === signInStatusError) {
             this.formChanged();
         }
@@ -240,6 +240,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             return;
         }
 
+        // 上述二项检查完成之后，更改登陆状态，执行登陆逻辑
         // Start signing in progress
         this.signInStatus = signInStatusOnGoing;
 

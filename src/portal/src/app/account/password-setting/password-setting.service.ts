@@ -32,6 +32,7 @@ export class PasswordSettingService {
             return Promise.reject("Invalid data");
         }
 
+        // user_id 是数据库中区分用户的 标识
         let putUrl = passwordChangeEndpoint.replace(":user_id", userId + "");
         return this.http.put(putUrl, JSON.stringify(setting), HTTP_JSON_OPTIONS)
             .toPromise()

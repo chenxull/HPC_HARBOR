@@ -32,6 +32,7 @@ export class SignUpComponent {
     onGoing: boolean = false;
     formValueChanged: boolean = false;
 
+    // 发送到 sign-in 父组件，然后 sign-in 组件调用handleUserCreation（）方法将注册的用户名输入到框中。
     @Output() userCreation = new EventEmitter<User>();
 
     constructor(
@@ -59,6 +60,7 @@ export class SignUpComponent {
         return this.newUserForm.isValid && this.error == null;
     }
 
+    // 由子组件new-user-form.component.ts发送来的事件触发的，当父组件监听到事件发生时，就调用此函数
     formValueChange(flag: boolean): void {
         if (flag) {
             this.formValueChanged = true;
@@ -76,10 +78,11 @@ export class SignUpComponent {
         this.error = null;
         this.onGoing = false;
         this.inlienAlert.close();
-
-        this.modal.open();
+         // 弹出模态框
+         this.modal.open();
     }
 
+    // 在关闭模态框时，需要检查表单中数据是否有改动。有改动的话会弹出确认表单
     close(): void {
         if (this.formValueChanged) {
             if (this.newUserForm.isEmpty()) {
@@ -100,7 +103,7 @@ export class SignUpComponent {
         this.modal.close();
     }
 
-    // Create new user
+    // Create new user 关键操作，注册新用户
     create(): void {
         // Double confirm everything is ok
         // Form is valid
@@ -108,7 +111,7 @@ export class SignUpComponent {
             return;
         }
 
-        // We have new user data
+        // We have new user data，获取子组件中的注册用户信息存储在 u 中
         let u = this.getNewUser();
         if (!u) {
             return;

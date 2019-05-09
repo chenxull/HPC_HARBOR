@@ -22,7 +22,7 @@ const signInUrl = '/c/login';
 /**
  *
  * Define a service to provide sign in methods
- *
+ *  初步测试，这个 sign-in 没有使用上。实际提供登陆服务的是 session 中的 sign-in
  **
  * class SignInService
  */

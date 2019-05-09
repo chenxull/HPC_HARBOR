@@ -160,7 +160,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
         // Call service
         this.onCalling = true;
-
+        // 调用更改密码服务
         this.passwordService.changePassword(cUser.user_id,
             {
                 new_password: this.pwdForm.value.newPassword,

@@ -2,14 +2,14 @@
     <form #signInForm="ngForm" class="login">
         <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}
     </label>
-<!--     login-group 是输入账号密码的模块   -->
+        <!-- login-group 是输入账号密码的模块   -->
         <div class="login-group">
             <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
                 <input class="username" type="text" required
                 [(ngModel)]="signInCredential.principal" 
                 name="login_username" id="login_username" placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}'
                 #userNameInput='ngModel'>
-<!--                 用户名为必填项-->
+                <!--  用户名为必填项-->
                 <span class="tooltip-content">
                     {{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}
                 </span>
@@ -34,14 +34,12 @@
             <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
             <a href="javascript:void(0)" class="signup" (click)="signUp()" *ngIf="selfSignUp">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
         </div>
-        <div>
-            <a href="https://github.com/goharbor/harbor" target="_blank" class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
-        </div>
+
     </form>
     <div *ngIf="appConfig.show_popular_repo" id="pop_repo" class="popular-repo-wrapper" >
         <top-repo class="repo-container"></top-repo>
     </div>
 </div>
-<!--注册-->
+<!--注册和忘记密码的路由组件  执行逻辑如下：当点击事件触发对应的函数时，通过@viewchild 装饰器访问到子组件的 open 方法。这里的#signupDialog 起到定为功能。-->
 <sign-up #signupDialog (userCreation)="handleUserCreation($event)"></sign-up>
 <forgot-password #forgotPwdDialog></forgot-password>

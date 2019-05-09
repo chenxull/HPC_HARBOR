@@ -45,7 +45,7 @@ export class UserService {
             .catch(error => this.handleError(error));
     }
 
-    // Add new user
+    // Add new user，由 sign-up 组件调用，向数据库中增加新用户。
     addUser(user: User): Promise<any> {
         return this.http.post(userMgmtEndpoint, JSON.stringify(user), HTTP_JSON_OPTIONS).toPromise()
             .then(() => null)
