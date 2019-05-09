@@ -4,7 +4,7 @@
     "description": "Harbor UI with Clarity",
     "angular-cli": {},
     "scripts": {
-        "start": "ng serve  --host 0.0.0.0 --proxy-config proxy.config.json",
+        "start": "ng serve   --proxy-config proxy.config.json",
         "lint": "tslint \"src/**/*.ts\"",
         "lint:lib": "tslint \"lib/**/*.ts\"  -e \"lib/dist/**/*\" ",
         "test": "ng test harbor-portal",

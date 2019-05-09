@@ -43,14 +43,14 @@ export class AppConfigService {
             .then(response => {
                 this.configurations = response.json() as AppConfig;
 
-                // Read admiral endpoint from cookie if existing
+                // Read admiral endpoint from cookie if existing 默认情况下为 NA
                 let admiralUrlFromCookie: string = this.cookie.get(CookieKeyOfAdmiral);
                 if (admiralUrlFromCookie) {
                     // Override the endpoint from configuration file
                     this.configurations.admiral_endpoint = decodeURIComponent(admiralUrlFromCookie);
                 }
 
-                return this.configurations;
+                return this.configurations; // 返回 App 的配置信息，通过 http 服务访问 /api/systeminfo 路由，向 adminserver 获取前端的配置信息
             });
     }
 

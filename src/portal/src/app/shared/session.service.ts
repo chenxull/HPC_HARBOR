@@ -63,13 +63,13 @@ export class SessionService {
         this.projectMembers = [];
     }
 
-    // Submit signin form to backend (NOT restful service)
+    // Submit signin form to backend (NOT restful service) 向后端发送登录信息，signInCredential带有账号密码信息
     signIn(signInCredential: SignInCredential): Promise<any> {
-        // Build the form package
+        // Build the form package，将账号密码数据包装成Uniform Resource Identifier (URI).是 string 类型的
         let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
         '&password=' + encodeURIComponent(signInCredential.password);
 
-        // Trigger Http
+        // Trigger Http URL:'/c/login'
         return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
             .toPromise()
             .then(() => null)
@@ -78,7 +78,7 @@ export class SessionService {
 
     /**
      * Get the related information of current signed in user from backend
-     *
+     * 通过 session 获取更多的用户信息
      * returns {Promise<SessionUser>}
      *
      * @memberOf SessionService
@@ -122,6 +122,7 @@ export class SessionService {
             return Promise.reject("Invalid account settings");
         }
         let putUrl = accountEndpoint.replace(":id", account.user_id + "");
+        // 通过 put 请求更新后端用户的信息
         return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS).toPromise()
             .then(() => {
                 // Retrieve current session user

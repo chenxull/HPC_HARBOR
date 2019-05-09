@@ -55,13 +55,14 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     // Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
+    // signupDialog是 html 中使用的参数，signUpDialog是 ts 中使用的参数。它们都是SignUpComponent子组件的类型
     @ViewChild('signupDialog') signUpDialog: SignUpComponent;
     @ViewChild('forgotPwdDialog') forgotPwdDialog: ForgotPasswordComponent;
 
     // Status flag
     signInStatus: number = signInStatusNormal;
 
-    // Initialize sign in credential
+    // Initialize sign in credential. signInCredential是一个输入属性，从其他组件来接受数据
     @Input() signInCredential: SignInCredential = {
         principal: "",
         password: ""
@@ -69,9 +70,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     constructor(
         private router: Router,
-        private session: SessionService,
+        private session: SessionService, // session服务
         private route: ActivatedRoute,
-        private appConfigService: AppConfigService,
+        private appConfigService: AppConfigService, // 前端的配置信息
         private cookie: CookieService,
         private skinableConfig: SkinableConfig) { }
 
@@ -88,13 +89,14 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
 
         // Make sure the updated configuration can be loaded
-        this.appConfigService.load()
+        this.appConfigService.load()  // 载入配置信息，这些信息时初始化时必备的
             .then(updatedConfig => this.appConfig = updatedConfig)
             .catch(error => {
                 // Catch the error
                 console.error("Failed to load bootstrap options with error: ", error);
             });
 
+        // 检测路由的变化，当有对应变化时 执行对应的操作
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
@@ -104,6 +106,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 }
             });
 
+        // 当用户点击记住我后，harbor 会从 cookie 中获取用户信息，并且将这些信息赋值给用户名输入框
         let remUsername = this.cookie.get(remCookieKey);
         remUsername = remUsername ? remUsername.trim() : "";
         if (remUsername) {
@@ -113,13 +116,13 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
     }
 
-    // App title
+    // 登录界面显示的名称
     public get appTitle(): string {
         if (this.appConfig && this.appConfig.with_admiral) {
             return "APP_TITLE.VIC";
         }
 
-        return "APP_TITLE.VMW_HARBOR";
+        return "APP_TITLE.HPC_HUB";
     }
 
     // For template accessing
@@ -136,12 +139,13 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return this.currentForm.form.valid;
     }
 
-    // Whether show the 'sign up' link
+    // Whether show the 'sign up' link 在数据库授权登录模式下才有注册账号按钮
     public get selfSignUp(): boolean {
         return this.appConfig.auth_mode === 'db_auth'
             && this.appConfig.self_registration;
     }
 
+    // 只有在 db 模式下才能
     public get showForgetPwd(): boolean {
         return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth';
     }

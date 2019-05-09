@@ -99,7 +99,7 @@ func (cc *CommonController) UserExists() {
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	cc.Data["json"] = exist
-	// exist 是 bool 类型，ServeJSON 将数据发送回去。TODO 具体发送到哪里有待研究
+	// exist 是 bool 类型，ServeJSON 将数据发送回去. 发送到前端的 session 服务中的checkUserExisting函数。
 	cc.ServeJSON()
 }
 
