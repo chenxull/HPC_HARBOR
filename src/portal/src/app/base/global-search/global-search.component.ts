@@ -58,6 +58,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         // custom skin
         let customSkinObj = this.skinableConfig.getProject();
+        // 背景字
         if (customSkinObj && customSkinObj.projectName) {
             this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': customSkinObj.projectName}).subscribe(res => {
                 // Placeholder text
@@ -73,6 +74,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         this.searchSub = this.searchTerms.pipe(
             debounceTime(deBounceTime))
             .subscribe(term => {
+                // 搜索
                 this.searchTrigger.triggerSearch(term);
             });
         this.closeSub = this.searchTrigger.searchClearChan$.subscribe(clear => {

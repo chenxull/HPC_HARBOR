@@ -46,6 +46,7 @@ type searchResult struct {
 
 // Get ...
 func (s *SearchAPI) Get() {
+	// 获取搜索关键字
 	keyword := s.GetString("q")
 	isAuthenticated := s.SecurityCtx.IsAuthenticated()
 	isSysAdmin := s.SecurityCtx.IsSysAdmin()

@@ -25,6 +25,7 @@ export class SearchTriggerService {
   searchCloseChan$ = this.searchCloseSource.asObservable();
   searchClearChan$ = this.searchClearSource.asObservable();
 
+  // 触发搜索结果
   triggerSearch(event: string) {
     this.searchTriggerSource.next(event);
   }

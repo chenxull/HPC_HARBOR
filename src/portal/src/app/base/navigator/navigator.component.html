@@ -7,10 +7,11 @@
             <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
         </a>
     </div>
-    <div class="header-nav">
-        <a href="{{admiralLink}}" class="nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.MGMT' | translate}}</span></a>
-        <a href="javascript:void(0)" (click)="registryAction()" routerLink="/harbor" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.REG' | translate}}</span></a>
-    </div>
+<!--   目前用不上 -->
+<!--    <div class="header-nav">-->
+<!--        <a href="{{admiralLink}}" class="nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.MGMT' | translate}}</span></a>-->
+<!--        <a href="javascript:void(0)" (click)="registryAction()" routerLink="/harbor" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.REG' | translate}}</span></a>-->
+<!--    </div>-->
     <global-search></global-search>
     <div class="header-actions">
         <clr-dropdown class="dropdown bottom-left" *ngIf="!isIntegrationMode">

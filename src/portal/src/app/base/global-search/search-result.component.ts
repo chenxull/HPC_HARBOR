@@ -30,6 +30,7 @@ import { MessageHandlerService } from '../../shared/message-handler/message-hand
 })
 
 export class SearchResultComponent implements OnInit, OnDestroy {
+    // 搜索结果结构体
     searchResults: SearchResults = new SearchResults();
     originalCopy: SearchResults;
 
@@ -50,7 +51,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     constructor(
         private search: GlobalSearchService,
         private msgHandler: MessageHandlerService,
-        private searchTrigger: SearchTriggerService,
+        private searchTrigger: SearchTriggerService, // 触发器
         private appConfigService: AppConfigService) { }
 
     ngOnInit() {
@@ -139,6 +140,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         // Show spinner
         this.onGoing = true;
 
+        // 调用 search 服务，发送 http 请求给后端，从数据库中获取结果。
         this.search.doSearch(term)
             .then(searchResults => {
                 this.onGoing = false;

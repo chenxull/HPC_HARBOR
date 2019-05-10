@@ -1,13 +1,18 @@
 <clr-main-container>
+    <!-- 全局的提示信息-->
     <global-message [isAppLevel]="true"></global-message>
+    <!--  头部导航栏-->
     <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
     <div class="content-container">
+        <!--  harbor 类容展示页面      -->
         <div class="content-area" [class.container-override]="showSearch" [class.content-area-override]="!shouldOverrideContent" [class.start-content-padding]="shouldOverrideContent">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
+            <!--子路由的信息都在这个插口地方出现-->
             <router-outlet></router-outlet>
         </div>
+        <!--  侧边导航栏 -->
         <clr-vertical-nav [clrVerticalNavCollapsible]="true" *ngIf="isUserExisting">
             <a clrVerticalNavLink routerLinkActive="active" routerLink="/harbor/projects">
                 <clr-icon shape="organization" clrVerticalNavIcon></clr-icon>

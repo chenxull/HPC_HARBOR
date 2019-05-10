@@ -35,6 +35,7 @@ import {SkinableConfig} from "../../skinable-config.service";
 
 export class NavigatorComponent implements OnInit {
     // constructor(private router: Router){}
+    // 用户设置和更改用户密码事件，触发后会调用对应的函数 执行操作。
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
 
