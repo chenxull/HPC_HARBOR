@@ -50,7 +50,6 @@ func (s *SecurityContext) GetUsername() string {
 	}
 	return s.user.Username
 }
-
 // IsSysAdmin returns whether the authenticated user is system admin
 // It returns false if the user has not been authenticated
 func (s *SecurityContext) IsSysAdmin() bool {

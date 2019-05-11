@@ -90,6 +90,7 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 			log.Warningf("No filter found for access type: %s, skip filter, the access of resource '%s' will be set empty.", a.Type, a.Name)
 			continue
 		}
+		// 根据 f 的类型，会有二种类型的过滤，分别为repositoryFilter，registryFilter，前者给用户赋予具体的 pull or push 权限。
 		err = f.filter(ctx, pm, a)
 		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
 		if err != nil {
@@ -99,17 +100,19 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 	return nil
 }
 
-// MakeToken makes a valid jwt token based on parms.
+// MakeToken makes a valid jwt token based on parms. 生成 token 的重点
 func MakeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
 	pk, err := libtrust.LoadKeyFile(privateKey)
 	if err != nil {
 		return nil, err
 	}
+	// 设置 token 的过期时间
 	expiration, err := config.TokenExpiration()
 	if err != nil {
 		return nil, err
 	}
 
+	// issuer:harbor-token-issuer 是请求发起者
 	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
 	if err != nil {
 		return nil, err
@@ -180,6 +183,7 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 	payload := fmt.Sprintf("%s.%s", encodedJoseHeader, encodedClaimSet)
 
 	var signatureBytes []byte
+	// 使用 jwt 签名
 	if signatureBytes, _, err = signingKey.Sign(strings.NewReader(payload), crypto.SHA256); err != nil {
 		return nil, 0, nil, fmt.Errorf("unable to sign jwt payload: %s", err)
 	}

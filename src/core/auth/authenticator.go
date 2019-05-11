@@ -146,6 +146,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 		log.Debugf("%s is locked due to login failure, login failed", m.Principal)
 		return nil, nil
 	}
+	// 对用户进行验证，验证器根据 m 中的数据对用户进行验证
 	user, err := authenticator.Authenticate(m)
 	if err != nil {
 		if _, ok = err.(ErrAuth); ok {

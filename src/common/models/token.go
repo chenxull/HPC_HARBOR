@@ -15,6 +15,7 @@
 package models
 
 // Token represents the json returned by registry token service
+// registry 有一个 token service，用来返回 token
 type Token struct {
 	Token     string `json:"token"`
 	ExpiresIn int    `json:"expires_in"`

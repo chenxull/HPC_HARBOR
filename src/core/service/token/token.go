@@ -33,8 +33,10 @@ type Handler struct {
 func (h *Handler) Get() {
 	request := h.Ctx.Request
 	log.Debugf("URL for token request: %s", request.URL.String())
-	service := h.GetString("service")
-	tokenCreator, ok := creatorMap[service]
+	// service 字段是托管资源的服务名称
+	//Www-Authenticate: Bearer realm="https://auth.docker.io/token",service="registry.docker.io",scope="repository:samalba/my-app:pull,push"
+	service := h.GetString("service") // service="registry.docker.io"
+	tokenCreator, ok := creatorMap[service]  // 为这个 service 创建 token
 	if !ok {
 		errMsg := fmt.Sprintf("Unable to handle service: %s", service)
 		log.Errorf(errMsg)

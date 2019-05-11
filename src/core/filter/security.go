@@ -82,7 +82,7 @@ var (
 
 // Init ReqCtxMofiers list
 func Init() {
-	// integration with admiral
+	// integration with admiral: vmware 的一款容器管理软件，一般都不会开启的
 	if config.WithAdmiral() {
 		reqCtxModifiers = []ReqCtxModifier{
 			&secretReqCtxModifier{config.SecretStore},
@@ -107,12 +107,14 @@ func SecurityFilter(ctx *beegoctx.Context) {
 		return
 	}
 
+	// 获取传入的请求
 	req := ctx.Request
 	if req == nil {
 		return
 	}
 
 	// add security context and project manager to request context
+	// 遍历四中请求修改器，给 req 加上必要的信息
 	for _, modifier := range reqCtxModifiers {
 		if modifier.Modify(ctx) {
 			break
@@ -121,6 +123,7 @@ func SecurityFilter(ctx *beegoctx.Context) {
 }
 
 // ReqCtxModifier modifies the context of request
+// 请求修改器，对传入的请求做一些修改，beegoctx.Context 中包含了 req 和 resp 的各种信息
 type ReqCtxModifier interface {
 	Modify(*beegoctx.Context) bool
 }
@@ -150,6 +153,7 @@ func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 type basicAuthReqCtxModifier struct{}
 
 func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	// TODO 获取请求中的用户名和密码,弄清楚是如何获得的
 	username, password, ok := ctx.Request.BasicAuth()
 	if !ok {
 		return false
@@ -202,7 +206,7 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return true
 	}
 
-	// standalone
+	// standalone,通过在请求中获取的用户信息来登录 harbor，获取确认后的用户信息
 	user, err := auth.Login(models.AuthModel{
 		Principal: username,
 		Password:  password,
@@ -219,6 +223,7 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
 	securCtx := local.NewSecurityContext(user, pm)
+	// 给发送来的请求 包装上securCtx和 pm。 这些验证可能是组件内部之间通信需要的，目前还是猜测。
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
@@ -240,7 +245,7 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Info("can not get user information from session")
 		return false
 	}
-	log.Debug("Getting user %+v", user)
+	//log.Debug("Getting user %+v", user)
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
@@ -330,6 +335,7 @@ func GetSecurityContext(req *http.Request) (security.Context, error) {
 		return nil, fmt.Errorf("the security context got from request is nil")
 	}
 
+	// 因为 ctx 是接口类型，通过反射可以将其接口类型转换为 security.Context 类型。
 	c, ok := ctx.(security.Context)
 	if !ok {
 		return nil, fmt.Errorf("the variable got from request is not security context type")
@@ -349,6 +355,7 @@ func GetProjectManager(req *http.Request) (promgr.ProjectManager, error) {
 		return nil, fmt.Errorf("the project manager got from request is nil")
 	}
 
+	//	// 因为 ctx 是接口类型，通过反射可以将其接口类型转换为 promgr.ProjectManager 类型。
 	p, ok := pm.(promgr.ProjectManager)
 	if !ok {
 		return nil, fmt.Errorf("the variable got from request is not project manager type")

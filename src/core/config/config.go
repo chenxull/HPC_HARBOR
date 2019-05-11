@@ -123,7 +123,7 @@ func initSecretStore() {
 
 func initProjectManager() error {
 	var driver pmsdriver.PMSDriver
-	if WithAdmiral() {
+	if WithAdmiral() { // 无用
 		log.Debugf("Initialising Admiral client with certificate: %s", defaultCACertPath)
 		content, err := ioutil.ReadFile(defaultCACertPath)
 		if err != nil {
