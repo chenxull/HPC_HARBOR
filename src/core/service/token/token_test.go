@@ -152,6 +152,7 @@ func TestMakeToken(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting public key from cert: %s", crt)
 	}
+	// 使用 claims 信息对 token进行签名
 	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])

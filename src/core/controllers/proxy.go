@@ -11,6 +11,7 @@ type RegistryProxy struct {
 }
 
 // Handle is the only entrypoint for incoming requests, all requests must go through this func.
+// 所有访问 docker registry 的请求的总入口
 func (p *RegistryProxy) Handle() {
 	req := p.Ctx.Request
 	rw := p.Ctx.ResponseWriter

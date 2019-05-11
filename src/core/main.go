@@ -87,14 +87,16 @@ func main() {
 	}
 	log.Info("configurations initialization completed")
 	token.InitCreators()
+	// 读取数据库的配置
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
+	// 用上述的配置初始化数据库
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
-
+	// 初始化 admin 的密码
 	password, err := config.InitialAdminPassword()
 	if err != nil {
 		log.Fatalf("failed to get admin's initia password: %v", err)
@@ -103,7 +105,7 @@ func main() {
 		log.Error(err)
 	}
 
-	// Init API handler
+	// Init chart API handler。hlemchart
 	if err := api.Init(); err != nil {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
@@ -123,6 +125,7 @@ func main() {
 		}
 	}
 
+	// 镜像库复制控制器初始化
 	if err := core.Init(); err != nil {
 		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
@@ -150,6 +153,7 @@ func main() {
 	}
 
 	log.Info("Init proxy")
+	// 前端代理初始化，用来对传入到后端的请求先进行一步处理。
 	proxy.Init()
 	// go proxy.StartProxy()
 	beego.Run()

@@ -80,7 +80,7 @@ func InitDatabase(database *models.Database) error {
 	}
 
 	log.Infof("Registering database: %s", db.String())
-	// 注册数据库
+	// 注册数据库,也就是根据配置信息连接到数据库中。
 	if err := db.Register(); err != nil {
 		return err
 	}
