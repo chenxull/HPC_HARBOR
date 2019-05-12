@@ -111,6 +111,7 @@ func main() {
 	}
 
 	// Subscribe the policy change topic.
+	// 在通知服务中注册 topic 和对应的 handler，这里初始化的是clair 的扫描策略
 	if err = notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{}); err != nil {
 		log.Errorf("failed to subscribe scan all policy change topic: %v", err)
 	}
@@ -153,7 +154,7 @@ func main() {
 	}
 
 	log.Info("Init proxy")
-	// 前端代理初始化，用来对传入到后端的请求先进行一步处理。
+	// 前端代理初始化，用来对传入到后端的请求先进行一步处理。主要是针对 registry 的请求进行反向代理。
 	proxy.Init()
 	// go proxy.StartProxy()
 	beego.Run()

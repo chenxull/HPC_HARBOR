@@ -22,6 +22,7 @@ func (fsh *fakeStatefulHandler) Handle(v interface{}) error {
 	if v != nil && reflect.TypeOf(v).Kind() == reflect.Int {
 		increment = v.(int)
 	}
+	// 对传入的数字相加
 	atomic.AddInt32(&statefulData, (int32)(increment))
 	return nil
 }

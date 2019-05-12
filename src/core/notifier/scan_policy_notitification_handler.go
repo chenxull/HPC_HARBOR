@@ -48,11 +48,14 @@ func (s *ScanPolicyNotificationHandler) Handle(value interface{}) error {
 	}
 
 	if notification.Type == PolicyTypeDaily {
+		// 先取消所有扫描任务
 		if err := cancelScanAllJobs(); err != nil {
 			return fmt.Errorf("Failed to cancel scan_all jobs, error: %v", err)
 		}
+		// 解析前端传入的时间
 		h, m, s := common_utils.ParseOfftime(notification.DailyTime)
 		cron := fmt.Sprintf("%d %d %d * * *", s, m, h)
+		// 创建定时的调度任务
 		if err := utils.ScheduleScanAllImages(cron); err != nil {
 			return fmt.Errorf("Failed to schedule scan_all job, error: %v", err)
 		}

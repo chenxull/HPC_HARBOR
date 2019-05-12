@@ -38,6 +38,7 @@ type HandlerChannel struct {
 // NotificationWatcher is defined to accept the events published
 // by the sender and match it with pre-registered notification handler
 // and then trigger the execution of the found handler.
+// 监控发布的事件，如果此事件与注册在 handlers 中的事件相匹配，触发此事件的 handler。
 type NotificationWatcher struct {
 	// For handle concurrent scenario.
 	*sync.RWMutex
@@ -45,10 +46,12 @@ type NotificationWatcher struct {
 	// To keep the registered handlers in memory.
 	// Each topic can register multiple handlers.
 	// Each handler can bind to multiple topics.
+	// topic 和 handlers 是多对多的关系
 	handlers map[string]HandlerIndexer
 
 	// Keep the channels which are used to control the concurrent executions
 	// of multiple stateful handlers with same type.
+	// 使用此 channel 并发的执行多个相同类型的有状态的 handlers
 	handlerChannels map[string]*HandlerChannel
 }
 
@@ -77,6 +80,7 @@ func (nw *NotificationWatcher) Handle(topic string, handler NotificationHandler)
 	defer nw.Unlock()
 	nw.Lock()
 
+	// 通过反射获取 handler 的具体类型, 如果 nw 中没有topic 对应的 handle，对其进行注册
 	t := reflect.TypeOf(handler).String()
 	if indexer, ok := nw.handlers[topic]; ok {
 		if _, existing := indexer[t]; existing {
@@ -141,6 +145,7 @@ func (nw *NotificationWatcher) UnHandle(topic string, handler string) error {
 	}
 
 	if indexer, ok := nw.handlers[topic]; ok {
+		// 当没有指定 handler 时，删除所有的 handler
 		if strings.TrimSpace(handler) == "" {
 			for t := range indexer {
 				revokeHandler(indexer, t)
@@ -172,17 +177,21 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 		ok       bool
 		handlers = []NotificationHandler{}
 	)
+	// 获取 map[topic]handler
 	if indexer, ok = nw.handlers[notification.Topic]; !ok {
 		return fmt.Errorf("No handlers registered for handling topic %s", notification.Topic)
 	}
 
+	// 提取出对应 topic 中的 handlers 出来
 	for _, h := range indexer {
 		handlers = append(handlers, h)
 	}
 
 	// Trigger handlers
+	// 遍历启动 goroutine 来执行通知处理程序
 	for _, h := range handlers {
 		var handlerChan chan bool
+		// 如果此 handler 是有状态的，需要为其创建指定类型的 handlerchan，存放通知信息
 		if h.IsStateful() {
 			t := reflect.TypeOf(h).String()
 			handlerChan = nw.handlerChannels[t].channel
@@ -197,6 +206,7 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 						<-ch
 					}
 				}()
+				// 调用指定事件的 handler，处理传入的 value
 				if err := hd.Handle(notification.Value); err != nil {
 					// Currently, we just log the error
 					log.Errorf("Error occurred when triggering handler %s of topic %s: %s\n", reflect.TypeOf(hd).String(), notification.Topic, err.Error())
@@ -221,6 +231,7 @@ func UnSubscribe(topic string, handler string) error {
 }
 
 // Publish is a wrapper utility method for NotificationWatcher.notify()
+// 通知
 func Publish(topic string, value interface{}) error {
 	return notificationWatcher.Notify(Notification{
 		Topic: topic,

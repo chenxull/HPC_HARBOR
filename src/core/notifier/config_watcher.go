@@ -8,6 +8,7 @@ import (
 )
 
 // WatchConfigChanges is used to watch the configuration changes.
+// 监听前端配置的变化
 func WatchConfigChanges(cfg map[string]interface{}) error {
 	if cfg == nil {
 		return errors.New("Empty configurations")

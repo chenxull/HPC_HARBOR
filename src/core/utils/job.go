@@ -41,6 +41,7 @@ func ScanAllImages() error {
 }
 
 // ScheduleScanAllImages will schedule a scan all job based on the cron string, add append a record in admin job table.
+// 根据 cron 对扫描计划进行调度
 func ScheduleScanAllImages(cron string) error {
 	_, err := scanAll(cron)
 	return err
