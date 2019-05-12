@@ -51,6 +51,7 @@ func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// 根据 jobdata构造发送请求
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
 	if err != nil {
 		return "", err
@@ -75,10 +76,12 @@ func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	if err := json.Unmarshal(data, stats); err != nil {
 		return "", err
 	}
+	// 返回任务执行状态码
 	return stats.Stats.JobID, nil
 }
 
 // GetJobLog call jobserivce API to get the log of a job.  It only accepts the UUID of the job
+// 请求 jobservice 的日志 API 路由获取任务日志。
 func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 	url := d.endpoint + "/api/v1/jobs/" + uuid + "/log"
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -104,6 +107,7 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 }
 
 // PostAction call jobservice's API to operate action for job specified by uuid
+// 执行指定的任务
 func (d *DefaultClient) PostAction(uuid, action string) error {
 	url := d.endpoint + "/api/v1/jobs/" + uuid
 	req := struct {

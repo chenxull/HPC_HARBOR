@@ -35,6 +35,7 @@ var (
 
 // ScanAllImages scans all images of Harbor by submiting a scan all job to jobservice, and the job handler will call API
 // on the "core" service
+// 镜像扫描的任务首先提交给 jobservice 组件进行处理，然后 jobservice handler 将会调用 core 中对应的 API 执行具体的操作。
 func ScanAllImages() error {
 	_, err := scanAll("")
 	return err
@@ -56,15 +57,16 @@ func scanAll(cron string, c ...job.Client) (string, error) {
 	}
 	kind := job.JobKindGeneric
 	if len(cron) > 0 {
-		kind = job.JobKindPeriodic
+		kind = job.JobKindPeriodic // 任务类型：周期性
 	}
 	meta := &jobmodels.JobMetadata{
 		JobKind:  kind,
 		IsUnique: true,
 		Cron:     cron,
 	}
+	// 将扫描任务写入数据库中
 	id, err := dao.AddAdminJob(&models.AdminJob{
-		Name: job.ImageScanAllJob,
+		Name: job.ImageScanAllJob, // 扫描所有镜像
 		Kind: kind,
 	})
 	if err != nil {
@@ -76,6 +78,7 @@ func scanAll(cron string, c ...job.Client) (string, error) {
 		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/adminjob/%d", config.InternalCoreURL(), id),
 	}
 	log.Infof("scan_all job scheduled/triggered, cron string: '%s'", cron)
+	// 将构造好的 job 数据发送给 jobservice 进行处理，返回任务执行的状态码。
 	return client.SubmitJob(data)
 }
 

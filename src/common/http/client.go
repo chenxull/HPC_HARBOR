@@ -50,6 +50,7 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 // Do ...
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	for _, modifier := range c.modifiers {
+		// 在发送数据前，根据 client 中的修改器对 req 进行修改。具体来说就是对 req 进行验证授权管理
 		if err := modifier.Modify(req); err != nil {
 			return nil, err
 		}

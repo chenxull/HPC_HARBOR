@@ -20,6 +20,7 @@ import (
 
 const (
 	// AdminJobTable is table name for admin job
+	// 表名admin_job
 	AdminJobTable = "admin_job"
 )
 

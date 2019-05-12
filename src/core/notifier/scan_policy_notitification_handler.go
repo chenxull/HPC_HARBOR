@@ -47,6 +47,7 @@ func (s *ScanPolicyNotificationHandler) Handle(value interface{}) error {
 		return errors.New("ScanPolicyNotificationHandler can not handle value with invalid type")
 	}
 
+	// 每日扫描一次
 	if notification.Type == PolicyTypeDaily {
 		// 先取消所有扫描任务
 		if err := cancelScanAllJobs(); err != nil {
@@ -81,6 +82,7 @@ func cancelScanAllJobs(c ...job.Client) error {
 		Name: job.ImageScanAllJob,
 		Kind: job.JobKindPeriodic,
 	}
+	// 获取类型为周期性扫描的任务
 	jobs, err := dao.GetAdminJobs(q)
 	if err != nil {
 		log.Errorf("Failed to query sheduled scan_all jobs, error: %v", err)
