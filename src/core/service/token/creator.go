@@ -81,6 +81,7 @@ type Creator interface {
 	// 为 docker pull/push 创建 token 信息
 	Create(r *http.Request) (*models.Token, error)
 }
+
 // 解析请求中关于镜像的信息。
 type imageParser interface {
 	parse(s string) (*image, error)

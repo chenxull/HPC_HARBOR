@@ -52,6 +52,7 @@ func (h *Handler) Prepare() {
 		h.Abort("200")
 		return
 	}
+	// 获取任务 id
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
 		log.Errorf("Failed to get job ID, error: %v", err)
@@ -60,6 +61,7 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.id = id
+	// 将jobID 作为 UUID
 	h.UUID = data.JobID
 	status, ok := statusMap[data.Status]
 	if !ok {
@@ -78,6 +80,7 @@ func (h *Handler) HandleAdminJob() {
 		h.HandleInternalServerError(err.Error())
 		return
 	}
+	// 更新任务状态
 	if err := dao.UpdateAdminJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())

@@ -44,6 +44,7 @@ const vicPrefix = "vic/"
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
+	// 从通知中的 json 数据中获取Notification
 	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
 
 	if err != nil {
@@ -51,6 +52,7 @@ func (n *NotificationHandler) Post() {
 		return
 	}
 
+	// 对事件进行过滤，只有来自外部的 docker-client 的 pull or push 请求，或则来自 jobservice 的 push 请求事件通过过滤。。
 	events, err := filterEvents(&notification)
 	if err != nil {
 		log.Errorf("failed to filter events: %v", err)
@@ -58,7 +60,9 @@ func (n *NotificationHandler) Post() {
 	}
 
 	for _, event := range events {
+		//repository = library/ubuntu
 		repository := event.Target.Repository
+		// 对于library/ubuntu ，提取出 project = library
 		project, _ := utils.ParseRepository(repository)
 		tag := event.Target.Tag
 		action := event.Action
@@ -68,6 +72,7 @@ func (n *NotificationHandler) Post() {
 			user = "anonymous"
 		}
 
+		// 根据project name 获取到其详细信息
 		pro, err := config.GlobalProjectMgr.Get(project)
 		if err != nil {
 			log.Errorf("failed to get project by name %s: %v", project, err)
@@ -79,6 +84,7 @@ func (n *NotificationHandler) Post() {
 		}
 
 		go func() {
+			// 将记录日志存入数据库中持久化存储。
 			if err := dao.AddAccessLog(models.AccessLog{
 				Username:  user,
 				ProjectID: pro.ProjectID,
@@ -93,6 +99,7 @@ func (n *NotificationHandler) Post() {
 
 		if action == "push" {
 			go func() {
+				// 从数据库中检查是否存在对应的镜像存储仓库。 例如 repository = library/ubuntu
 				exist := dao.RepositoryExists(repository)
 				if exist {
 					return
@@ -102,10 +109,12 @@ func (n *NotificationHandler) Post() {
 					Name:      repository,
 					ProjectID: pro.ProjectID,
 				}
+				// 将 push 来的 repository 信息存储在数据库中
 				if err := dao.AddRepository(repoRecord); err != nil {
 					log.Errorf("Error happens when adding repository: %v", err)
 				}
 			}()
+			// 等待镜像的 manifest 准备好
 			if !coreutils.WaitForManifestReady(repository, tag, 5) {
 				log.Errorf("Manifest for image %s:%s is not ready, skip the follow up actions.", repository, tag)
 				return
@@ -113,6 +122,7 @@ func (n *NotificationHandler) Post() {
 
 			go func() {
 				image := repository + ":" + tag
+				// 发出指定镜像复制的事件
 				err := notifier.Publish(topic.ReplicationEventTopicOnPush, rep_notification.OnPushNotification{
 					Image: image,
 				})
@@ -123,6 +133,7 @@ func (n *NotificationHandler) Post() {
 				log.Debugf("the on push topic for resource %s published", image)
 			}()
 
+			// 检查是否需要自动扫描镜像仓库，当有镜像上传到指定的 repository 中时。
 			if autoScanEnabled(pro) {
 				last, err := clairdao.GetLastUpdate()
 				if err != nil {
@@ -145,6 +156,7 @@ func (n *NotificationHandler) Post() {
 	}
 }
 
+// 只有符合正则要求的请求类型事件才可以返回
 func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	events := []*models.Event{}
 
@@ -152,6 +164,7 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 		log.Debugf("receive an event: \n----ID: %s \n----target: %s:%s \n----digest: %s \n----action: %s \n----mediatype: %s \n----user-agent: %s", event.ID, event.Target.Repository,
 			event.Target.Tag, event.Target.Digest, event.Action, event.Target.MediaType, event.Request.UserAgent)
 
+		// 判断 media type 是否匹配
 		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
 		if err != nil {
 			log.Errorf("failed to match the media type against pattern: %v", err)
@@ -174,10 +187,12 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 
 func checkEvent(event *models.Event) bool {
 	// pull and push manifest
+	//当事件请求的发起着不是harbor-registry-client ，说明时间的请求来自于用户同时 action =pull or push。可以判断为pull and push manifest 请求。
 	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) != "harbor-registry-client" && (event.Action == "pull" || event.Action == "push") {
 		return true
 	}
 	// push manifest by job-service
+	// 当事件请求的发起者是 harbor-registry-client 时，这是一个内部的请求，由 jobservice 发起，用来与其他 harbor 仓库进行同步。
 	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
 		return true
 	}

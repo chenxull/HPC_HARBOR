@@ -45,7 +45,7 @@ func MatchPullManifest(req *http.Request) (bool, string, string) {
 	}
 	re := regexp.MustCompile(manifestURLPattern)
 	s := re.FindStringSubmatch(req.URL.Path)
- 	if len(s) == 3 {
+	if len(s) == 3 {
 		s[1] = strings.TrimSuffix(s[1], "/")
 		return true, s[1], s[2]
 	}

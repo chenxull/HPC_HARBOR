@@ -44,7 +44,7 @@ func TestConfig(t *testing.T) {
 	logger.Debug(os.LookupEnv("ADMINSERVER_URL"))
 
 	secretKeyPath := "/tmp/secretkey"
-	 _,err = test.GenerateKey(secretKeyPath)
+	_, err = test.GenerateKey(secretKeyPath)
 	if err != nil {
 		t.Errorf("failed to generate secret key: %v", err)
 		return

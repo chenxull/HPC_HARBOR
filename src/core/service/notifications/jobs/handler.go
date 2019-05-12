@@ -44,6 +44,7 @@ type Handler struct {
 
 // Prepare ...
 func (h *Handler) Prepare() {
+	// 获取任务 id
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
 		log.Errorf("Failed to get job ID, error: %v", err)
@@ -52,6 +53,7 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.id = id
+	// data 记录了 Job 状态的改变
 	var data jobmodels.JobStatusChange
 	err = json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
@@ -65,12 +67,15 @@ func (h *Handler) Prepare() {
 		h.Abort("200")
 		return
 	}
+	// 上述操作的主要目的是获取状态值
 	h.status = status
 }
 
 // HandleScan handles the webhook of scan job
+// 处理镜像扫描任务
 func (h *Handler) HandleScan() {
 	log.Debugf("received san job status update event: job-%d, status-%s", h.id, h.status)
+	// 更新扫描漏洞 job 的状态
 	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())
@@ -79,6 +84,7 @@ func (h *Handler) HandleScan() {
 }
 
 // HandleReplication handles the webhook of replication job
+// 处理镜像复制任务
 func (h *Handler) HandleReplication() {
 	log.Debugf("received replication job status update event: job-%d, status-%s", h.id, h.status)
 	if err := dao.UpdateRepJobStatus(h.id, h.status); err != nil {

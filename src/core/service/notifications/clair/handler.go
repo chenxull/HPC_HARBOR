@@ -47,11 +47,13 @@ func (h *Handler) Handle() {
 		clairClient = clair.NewClient(config.ClairEndpoint(), nil)
 	}
 	var ne models.ClairNotificationEnvelope
+	// 将请求中的数据写入到 ne 中
 	if err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &ne); err != nil {
 		log.Errorf("Failed to decode the request: %v", err)
 		return
 	}
 	log.Debugf("Received notification from Clair, name: %s", ne.Notification.Name)
+	// 获取ClairNotification
 	notification, err := clairClient.GetNotification(ne.Notification.Name)
 	if err != nil {
 		log.Errorf("Failed to get notification details from Clair, name: %s, err: %v", ne.Notification.Name, err)
@@ -72,6 +74,7 @@ func (h *Handler) Handle() {
 	}
 	for k, v := range ns {
 		if v {
+			// 更新 vuln.namespace 的时间戳
 			if err := dao.SetClairVulnTimestamp(k, time.Now()); err == nil {
 				log.Debugf("Updated the timestamp for namespaces: %s", k)
 			} else {
@@ -79,15 +82,18 @@ func (h *Handler) Handle() {
 			}
 		}
 	}
+	// 15 分钟检查一下
 	if utils.ScanOverviewMarker().Check() {
 		go func() {
 			<-time.After(rescanInterval)
+			// 获取数据库表img_scan_overview，即镜像扫描结果概览
 			l, err := dao.ListImgScanOverviews()
 			if err != nil {
 				log.Errorf("Failed to list scan overview records, error: %v", err)
 				return
 			}
 			for _, e := range l {
+				// 更新img_scan_overview中的记录。根据镜像中的 layer 来查询漏洞，e.DetailsKey 为layername
 				if err := clair.UpdateScanOverview(e.Digest, e.DetailsKey, config.ClairEndpoint()); err != nil {
 					log.Errorf("Failed to refresh scan overview for image: %s", e.Digest)
 				} else {
@@ -99,6 +105,7 @@ func (h *Handler) Handle() {
 	} else {
 		log.Debugf("There is a rescan scheduled at %v already, skip.", utils.ScanOverviewMarker().Next())
 	}
+	// 关闭 clair 的通知服务
 	if err := clairClient.DeleteNotification(ne.Notification.Name); err != nil {
 		log.Warningf("Failed to remove notification from Clair, name: %s", ne.Notification.Name)
 	} else {

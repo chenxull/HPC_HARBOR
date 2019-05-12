@@ -52,20 +52,36 @@ func UpdateScanOverview(digest, layerName string, clairEndpoint string, l ...*lo
 		logger = log.DefaultLogger()
 	}
 	client := NewClient(clairEndpoint, logger)
+	// 获取此层的漏洞信息
 	res, err := client.GetResult(layerName)
 	if err != nil {
 		logger.Errorf("Failed to get result from Clair, error: %v", err)
 		return err
 	}
 	compOverview, sev := transformVuln(res)
+	// 更新img_scan_overview中的components和serverity记录
 	return dao.UpdateImgScanOverview(digest, layerName, sev, compOverview)
 }
 
+//transformVuln()函数用来获取总的漏洞数量以及各个漏洞级别漏洞的数量
 func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOverview, models.Severity) {
 	vulnMap := make(map[models.Severity]int)
+	// 获取此层中所有的漏洞的信息,features 的结构体如下
+	/*
+		// ClairFeature ...
+		type ClairFeature struct {
+		Name            string               `json:"Name,omitempty"`
+		NamespaceName   string               `json:"NamespaceName,omitempty"`
+		VersionFormat   string               `json:"VersionFormat,omitempty"`
+		Version         string               `json:"Version,omitempty"`
+		Vulnerabilities []ClairVulnerability `json:"Vulnerabilities,omitempty"`
+		AddedBy         string               `json:"AddedBy,omitempty"`
+	}
+	*/
 	features := clairVuln.Layer.Features
 	totalComponents := len(features)
 	var temp models.Severity
+	// 为次层中的每个漏洞划分漏洞风险级别，从 1 到 5
 	for _, f := range features {
 		sev := models.SevNone
 		for _, v := range f.Vulnerabilities {
@@ -74,6 +90,7 @@ func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOver
 				sev = temp
 			}
 		}
+		// vulnMap 用来统计每种级别的漏洞有多少个，需要在前端上展示出来。
 		vulnMap[sev]++
 	}
 	overallSev := models.SevNone
@@ -90,7 +107,7 @@ func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOver
 	}
 	return &models.ComponentsOverview{
 		Total:   totalComponents,
-		Summary: compSummary,
+		Summary: compSummary, // 每种级别的漏洞各个多少个
 	}, overallSev
 }
 

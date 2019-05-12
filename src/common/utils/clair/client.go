@@ -38,6 +38,7 @@ type Client struct {
 // NewClient creates a new instance of client, set the logger as the job's logger if it's used in a job handler.
 func NewClient(endpoint string, logger *log.Logger) *Client {
 	if logger == nil {
+		// 日志搜集器
 		logger = log.DefaultLogger()
 	}
 	return &Client{
@@ -109,6 +110,7 @@ func (c *Client) GetNotification(id string) (*models.ClairNotification, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 向 clair 发送请求，开始扫描
 	b, err := c.send(req, http.StatusOK)
 	if err != nil {
 		return nil, err

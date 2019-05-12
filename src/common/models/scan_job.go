@@ -85,6 +85,7 @@ func (iso *ImgScanOverview) TableName() string {
 
 // ComponentsOverview has the total number and a list of components number of different serverity level.
 type ComponentsOverview struct {
+	// total 表示有多少漏洞
 	Total   int                        `json:"total"`
 	Summary []*ComponentsOverviewEntry `json:"summary"`
 }

@@ -54,11 +54,11 @@ func filter(req *http.Request, resp http.ResponseWriter) {
 func matchRepoTagDelete(req *http.Request) bool {
 	if req.Method != http.MethodDelete {
 		return false
-		}
+	}
 
 	if inWhiteList(req) {
 		return false
-		}
+	}
 
 	re := regexp.MustCompile(tagURL)
 	s := re.FindStringSubmatch(req.URL.Path)

@@ -28,6 +28,7 @@ import (
 
 // NewRepositoryClientForUI creates a repository client that can only be used to
 // access the internal registry
+// 用来访问内部的 registry
 func NewRepositoryClientForUI(username, repository string) (*registry.Repository, error) {
 	endpoint, err := config.RegistryURL()
 	if err != nil {
@@ -37,11 +38,14 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 	uam := &auth.UserAgentModifier{
 		UserAgent: "harbor-registry-client",
 	}
+	// 创建一个 token 授权人，授权服务器为"harbor-registry"
 	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
 	transport := registry.NewTransport(http.DefaultTransport, authorizer, uam)
+	// 为 client 定义了一个经过授权的传输通道
 	client := &http.Client{
 		Transport: transport,
 	}
+	// 创建Repository实例，其实是一个用来访问指定 repository 的客户端
 	return registry.NewRepository(repository, endpoint, client)
 }
 
@@ -56,6 +60,7 @@ func WaitForManifestReady(repository string, tag string, maxRetry int) bool {
 		return false
 	}
 	for i := 0; i < maxRetry; i++ {
+		// 使用 tag 检查镜像的 manifest 是否存在
 		_, exist, err := repoClient.ManifestExist(tag)
 		if err != nil {
 			log.Errorf("Unexpected error when checking manifest existence, image:  %s:%s, error: %v", repository, tag, err)

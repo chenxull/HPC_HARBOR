@@ -57,6 +57,7 @@ func TestTransformVuln(t *testing.T) {
 		panic(err)
 	}
 	loadVuln(real, clairVuln)
+	// 对total-12.json文件进行处理，transformVuln()函数用来获取总的漏洞数量以及各个漏洞级别漏洞的数量
 	output, o = transformVuln(clairVuln)
 	assert.Equal(12, output.Total)
 	assert.Equal(models.SevHigh, o)
