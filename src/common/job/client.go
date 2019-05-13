@@ -84,6 +84,7 @@ func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 // GetJobLog call jobserivce API to get the log of a job.  It only accepts the UUID of the job
 // 请求 jobservice 的日志 API 路由获取任务日志。
 func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
+	// 请求发送到 jobservice
 	url := d.endpoint + "/api/v1/jobs/" + uuid + "/log"
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
