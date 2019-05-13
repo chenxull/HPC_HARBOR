@@ -36,6 +36,7 @@ type secretHandler struct {
 
 // NewSecretHandler creaters a new authentiation handler which adds
 // basic authentication credentials to a request.
+// 创建一个经过授权的请求
 func NewSecretHandler(secrets map[string]string) AuthenticationHandler {
 	return &secretHandler{
 		secrets: secrets,

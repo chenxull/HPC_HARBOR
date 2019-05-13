@@ -48,6 +48,7 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 		}
 	}
 
+	// 获取环境变量数据，根据提供的 yml 文件来获取
 	if detectEnv {
 		c.loadEnvs()
 	}

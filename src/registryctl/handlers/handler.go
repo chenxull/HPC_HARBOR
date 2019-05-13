@@ -26,6 +26,7 @@ import (
 // NewHandlerChain returns a gorilla router which is wrapped by  authenticate handler
 // and logging handler
 func NewHandlerChain() http.Handler {
+	// 创建路由处理方法
 	h := newRouter()
 	secrets := map[string]string{
 		"jobSecret": os.Getenv("JOBSERVICE_SECRET"),
@@ -33,11 +34,14 @@ func NewHandlerChain() http.Handler {
 	insecureAPIs := map[string]bool{
 		"/api/health": true,
 	}
+	// 创建经过授权的请求，NewSecretHandler 函数将基础的授权信息存入到请求中
 	h = newAuthHandler(auth.NewSecretHandler(secrets), h, insecureAPIs)
+	// 将上述 handler 和日志绑定在一起
 	h = gorilla_handlers.LoggingHandler(os.Stdout, h)
 	return h
 }
 
+// 实际传送的请求
 type authHandler struct {
 	authenticator auth.AuthenticationHandler
 	handler       http.Handler
@@ -60,6 +64,7 @@ func (a *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 请求已经经过授权并带有insecureAPIs信息，直接提供服务
 	if a.insecureAPIs != nil && a.insecureAPIs[r.URL.Path] {
 		if a.handler != nil {
 			a.handler.ServeHTTP(w, r)
@@ -67,6 +72,7 @@ func (a *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 对请求进行授权，大致思路就是获取请求的Authorization字段，判断其 value 是否存在于secretHandler的secrets字段中。
 	err := a.authenticator.AuthorizeRequest(r)
 	if err != nil {
 		log.Errorf("failed to authenticate request: %v", err)

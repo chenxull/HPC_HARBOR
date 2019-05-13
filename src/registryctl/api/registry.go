@@ -38,6 +38,7 @@ type GCResult struct {
 
 // StartGC ...
 func StartGC(w http.ResponseWriter, r *http.Request) {
+	// 手动执行垃圾回收指令，需要仔细了解一下
 	cmd := exec.Command("/bin/bash", "-c", "registry garbage-collect "+regConf)
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf

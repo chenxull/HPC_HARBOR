@@ -58,6 +58,7 @@ func (s *RegistryCtl) Start() {
 	if s.ServerConf.Protocol == "HTTPS" {
 		err = regCtl.ListenAndServeTLS(s.ServerConf.HTTPSConfig.Cert, s.ServerConf.HTTPSConfig.Key)
 	} else {
+		// 启动服务器，监听对应的端口。处理 gc 和健康检查任务
 		err = regCtl.ListenAndServe()
 	}
 
@@ -83,8 +84,8 @@ func main() {
 	}
 
 	regCtl := &RegistryCtl{
-		ServerConf: *config.DefaultConfig,
-		Handler:    handlers.NewHandlerChain(),
+		ServerConf: *config.DefaultConfig, // 协议，端口号
+		Handler:    handlers.NewHandlerChain(), // 授权和登录处理 handler
 	}
 
 	regCtl.Start()

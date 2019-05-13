@@ -56,7 +56,9 @@ func NewClient(baseURL string, cfg *Config) Client {
 		baseURL: baseURL,
 	}
 	if cfg != nil {
+		// 为内部创建的 docker client 授权，这里的 cfg.Secret 为环境中 JOBSERVICE_SECRET 的值
 		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
+		// 具体的 client 的创建需要调用 common 包中的NewClient 函数。经过这样的处理的 client 发出去的请求都会被 modifiers 修改，进行验证授权。
 		client.client = common_http.NewClient(nil, authorizer)
 	}
 	return client
@@ -73,7 +75,9 @@ func (c *client) Health() error {
 
 // StartGC ...
 func (c *client) StartGC() (*api.GCResult, error) {
+	// 构建请求地址，发送给 api 接口。
 	url := c.baseURL + "/api/registry/gc"
+	// 垃圾回收的结果
 	gcr := &api.GCResult{}
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
@@ -94,6 +98,7 @@ func (c *client) StartGC() (*api.GCResult, error) {
 		log.Errorf("Failed to start gc: %d", resp.StatusCode)
 		return nil, fmt.Errorf("Failed to start GC: %d", resp.StatusCode)
 	}
+	// 格式化结果
 	if err := json.Unmarshal(data, gcr); err != nil {
 		return nil, err
 	}

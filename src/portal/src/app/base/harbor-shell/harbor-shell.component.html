@@ -22,6 +22,7 @@
                 <clr-icon shape="list" clrVerticalNavIcon></clr-icon>
                 {{'SIDE_NAV.LOGS' | translate}}
             </a>
+            <!--当前用户是系统管理员时才显示 -->
             <clr-vertical-nav-group  *ngIf="isSystemAdmin" routerLinkActive="active">
                 <clr-icon shape="administrator" clrVerticalNavIcon></clr-icon>
                 {{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}
