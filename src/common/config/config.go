@@ -26,6 +26,7 @@ import (
 
 // Manager manages configurations
 type Manager struct {
+	// adminserver 的 client，用来访问 adminserver 中的资源
 	client client.Client
 	Cache  bool
 	cache  cache.Cache
@@ -38,6 +39,7 @@ func NewManager(client client.Client, enableCache bool) *Manager {
 		client: client,
 	}
 
+	// 用来缓存配置信息
 	if enableCache {
 		m.Cache = true
 		m.cache = cache.NewMemoryCache()

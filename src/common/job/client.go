@@ -51,11 +51,12 @@ func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// 根据 jobdata构造发送请求
+	// 根据 jobdata构造发送请求，b 是请求的内容
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
 	if err != nil {
 		return "", err
 	}
+	// 设置请求的头
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := d.client.Do(req)
 	if err != nil {

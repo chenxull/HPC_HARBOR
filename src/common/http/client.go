@@ -66,6 +66,7 @@ func (c *Client) Get(url string, v ...interface{}) error {
 		return err
 	}
 
+	// 一个 GET 的实际执行，需要调用 DO 来对请求进行修改。
 	data, err := c.do(req)
 	if err != nil {
 		return err

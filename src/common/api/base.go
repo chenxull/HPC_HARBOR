@@ -213,6 +213,7 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 }
 
 // GetPaginationParams ...
+// 获取分页参数
 func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
 	page, err := b.GetInt64("page", 1)
 	if err != nil || page <= 0 {
