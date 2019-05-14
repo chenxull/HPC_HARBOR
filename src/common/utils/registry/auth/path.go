@@ -29,13 +29,14 @@ var (
 	manifest        = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/manifests/(" + reference.TagRegexp.String() + "|" + digest.DigestRegexp.String() + ")")
 	blob            = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/blobs/" + digest.DigestRegexp.String())
 	blobUpload      = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/blobs/uploads")
-	blobUploadChunk = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/blobs/uploads/[a-zA-Z0-9-_.=]+")
+	blobUploadChunk = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/blobs/uploads/[a-zA-Z0-9-_.=]+") // 一个 blob 分为多个 chunk 进行上传
 
 	repoRegExps = []*regexp.Regexp{tag, manifest, blob, blobUploadChunk, blobUpload}
 )
 
 // parse the repository name from path, if the path doesn't match any
 // regular expressions in repoRegExps, nil string will be returned
+// 用来解析路径中的镜像仓库名
 func parseRepository(path string) string {
 	for _, regExp := range repoRegExps {
 		subs := regExp.FindStringSubmatch(path)

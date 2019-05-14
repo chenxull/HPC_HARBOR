@@ -171,6 +171,7 @@ func TestModifyOfStandardTokenAuthorizer(t *testing.T) {
 		Body: data,
 	})
 
+	// token 服务器
 	tokenServer := test.NewServer(
 		&test.RequestHandlerMapping{
 			Method:  "GET",
@@ -187,6 +188,7 @@ func TestModifyOfStandardTokenAuthorizer(t *testing.T) {
 			"WWW-Authenticate": header,
 		},
 	})
+	// registry 服务器
 	registryServer := test.NewServer(
 		&test.RequestHandlerMapping{
 			Method:  "GET",

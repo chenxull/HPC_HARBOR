@@ -134,6 +134,7 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 
 	defer resp.Body.Close()
 
+	// 如果 manifest 存在获取response 中的 Docker-Content-Digest
 	if resp.StatusCode == http.StatusOK {
 		exist = true
 		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
@@ -378,8 +379,9 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 	}
 
 	defer resp.Body.Close()
-
+	// blob已在 Registry 中创建，并在提供的位置可用。
 	if resp.StatusCode == http.StatusAccepted {
+		// 返回位置，以及 上传的 uuid
 		location = resp.Header.Get(http.CanonicalHeaderKey("Location"))
 		uploadUUID = resp.Header.Get(http.CanonicalHeaderKey("Docker-Upload-UUID"))
 		return

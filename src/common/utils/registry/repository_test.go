@@ -157,6 +157,7 @@ func TestPushBlob(t *testing.T) {
 
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
+			// 用来创建存储 blob 的文件夹
 			Method:  "POST",
 			Pattern: fmt.Sprintf("/v2/%s/blobs/uploads/", repository),
 			Handler: initUploadHandler,

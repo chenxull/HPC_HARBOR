@@ -59,7 +59,7 @@
                 "CVSSv2":
                 {
                   "Score":7.8,
-                  "Vectors":"AV:N/AC:L/Au:N/C:N/I:N",
+                  "Vectors":"AV:N/AC:L/Au:N/C:N/I:N"
                 }
               }
             },

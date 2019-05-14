@@ -35,6 +35,7 @@ const (
 )
 
 type tokenGenerator interface {
+	// scopes 定义了此资源运行的操作
 	generate(scopes []*token.ResourceActions, endpoint string) (*models.Token, error)
 }
 
@@ -90,7 +91,7 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 		token = t.getCachedToken(key)
 	}
 
-	// request a new token if the token is null
+	//  request a new token if the token is null
 	if token == nil {
 		token, err = t.generator.generate(scopes, t.registryURL.String())
 		if err != nil {
@@ -243,11 +244,11 @@ func (t *tokenAuthorizer) updateCachedToken(scope string, token *models.Token) {
 // ping returns the realm, service and error
 func ping(client *http.Client, endpoint string) (string, string, error) {
 	resp, err := client.Get(endpoint)
-	if err != nil {
+		if err != nil {
 		return "", "", err
 	}
 	defer resp.Body.Close()
-
+	// challenges 是认证服务器发送回来
 	challenges := ParseChallengeFromResponse(resp)
 	for _, challenge := range challenges {
 		if scheme == challenge.Scheme {
@@ -268,7 +269,7 @@ func NewStandardTokenAuthorizer(client *http.Client, credential Credential,
 	customizedTokenService ...string) modifier.Modifier {
 	generator := &standardTokenGenerator{
 		credential: credential,
-		client:     client,
+		client:     client, // 包装有 transport
 	}
 
 	// when the registry client is used inside Harbor, the token request
@@ -291,9 +292,9 @@ func NewStandardTokenAuthorizer(client *http.Client, credential Credential,
 
 // standardTokenGenerator implements interface tokenGenerator
 type standardTokenGenerator struct {
-	realm      string
-	service    string
-	credential Credential
+	realm      string // 领域
+	service    string // token 服务器
+	credential Credential // 本质上是一个修改器
 	client     *http.Client
 }
 
@@ -301,6 +302,7 @@ type standardTokenGenerator struct {
 func (s *standardTokenGenerator) generate(scopes []*token.ResourceActions, endpoint string) (*models.Token, error) {
 	// ping first if the realm or service is null
 	if len(s.realm) == 0 || len(s.service) == 0 {
+		// 获取 realm ，service
 		realm, service, err := ping(s.client, endpoint)
 		if err != nil {
 			return nil, err

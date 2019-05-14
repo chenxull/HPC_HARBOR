@@ -35,6 +35,7 @@ type Registry struct {
 
 var defaultHTTPTransport, secureHTTPTransport, insecureHTTPTransport *http.Transport
 
+// 初始化不同类型传输通道
 func init() {
 	defaultHTTPTransport = &http.Transport{}
 
@@ -77,6 +78,7 @@ func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
 }
 
 // Catalog ...
+// 显示仓库的大概信息
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
 	suffix := "/v2/_catalog?n=1000"
@@ -128,6 +130,7 @@ func (r *Registry) Catalog() ([]string, error) {
 }
 
 // Ping ...
+// 测试 registry 服务是否可用
 func (r *Registry) Ping() error {
 	req, err := http.NewRequest(http.MethodHead, buildPingURL(r.Endpoint.String()), nil)
 	if err != nil {
