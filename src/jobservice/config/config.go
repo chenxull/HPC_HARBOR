@@ -58,6 +58,7 @@ const (
 var DefaultConfig = &Configuration{}
 
 // Configuration loads and keeps the related configuration items of job service.
+// 与 yml 文件中的格式相对应
 type Configuration struct {
 	// Protocol server listening on: https/http
 	Protocol string `yaml:"protocol"`

@@ -94,8 +94,10 @@ func (c *Context) Init() error {
 		}
 	}
 
+	// 获取数据库的信息
 	db := getDBFromConfig(configs)
 
+	//在 jobservice 中初始化数据库
 	err = dao.InitDatabase(db)
 	if err != nil {
 		return err

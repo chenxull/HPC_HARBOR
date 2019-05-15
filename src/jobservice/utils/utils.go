@@ -98,7 +98,7 @@ func TranslateRedisAddress(commaFormat string) (string, bool) {
 	if IsEmptyStr(commaFormat) {
 		return "", false
 	}
-
+	//host:port,weight,password,database_index
 	sections := strings.Split(commaFormat, ",")
 	totalSections := len(sections)
 	if totalSections == 0 {

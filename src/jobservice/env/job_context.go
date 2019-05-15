@@ -23,6 +23,7 @@ import (
 
 // JobContext is combination of BaseContext and other job specified resources.
 // JobContext will be the real execution context for one job.
+// 真正将会的执行的 context
 type JobContext interface {
 	// Build the context based on the parent context
 	//
@@ -32,6 +33,7 @@ type JobContext interface {
 	// Returns:
 	// new JobContext based on the parent one
 	// error if meet any problems
+	// 使用依赖数据来构建新的 context，
 	Build(dep JobData) (JobContext, error)
 
 	// Get property from the context
@@ -41,6 +43,7 @@ type JobContext interface {
 	// Returns:
 	//  The data of the specified context property if have
 	//  bool to indicate if the property existing
+	// 从 context 获取指定参数的值
 	Get(prop string) (interface{}, bool)
 
 	// SystemContext returns the system context
@@ -62,12 +65,14 @@ type JobContext interface {
 	// Returns:
 	//  op command if have
 	//  flag to indicate if have command
+	// 返回控制操作 stop/cancel
 	OPCommand() (string, bool)
 
 	// Return the logger
 	GetLogger() logger.Interface
 
 	// Launch sub jobs
+	// 启动子 job
 	LaunchJob(req models.JobRequest) (models.JobStats, error)
 }
 

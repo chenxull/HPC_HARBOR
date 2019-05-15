@@ -50,20 +50,24 @@ func main() {
 	defer cancel()
 
 	// Initialize logger
+	//ctx 带有日志记录器，在目前默认的配置中只设置了 logger，没有设置sweepers和 getter
 	if err := logger.Init(ctx); err != nil {
 		panic(err)
 	}
 
 	// Set job context initializer
+	// 这里的匿名函数是一个具体的 jobcontext
 	runtime.JobService.SetJobContextInitializer(func(ctx *env.Context) (env.JobContext, error) {
 		secret := config.GetAuthSecret()
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
 		}
-
+		//adminClient 用来获取配置信息,在 1.80 版本中不在使用
 		adminClient := client.NewClient(config.GetAdminServerEndpoint(), &client.Config{Secret: secret})
+		// 具体的 jobcontext
 		jobCtx := impl.NewContext(ctx.SystemContext, adminClient)
 
+		//为具体类型的 job 初始化数据库，因为不同类型的 job 使用的数据库是不一样的
 		if err := jobCtx.Init(); err != nil {
 			return nil, err
 		}

@@ -27,6 +27,7 @@ var singletons sync.Map
 // If failed, a nil logger and a non-nil error will be returned.
 // Otherwise, a non nil logger is returned with nil error.
 func GetLogger(loggerOptions ...Option) (Interface, error) {
+	// log 的参数的结构体
 	lOptions := &options{
 		values: make(map[string][]OptionItem),
 	}
@@ -49,15 +50,17 @@ func GetLogger(loggerOptions ...Option) (Interface, error) {
 			return nil, fmt.Errorf("no logger registered for name '%s'", name)
 		}
 
+		// 根据 name 注册日志类型
 		d := KnownLoggers(name)
 		var (
 			l  Interface
 			ok bool
 		)
 
-		// Singleton
+		// Singleton,只有STD类型的日志是 singleton 的
 		if d.Singleton {
 			var li interface{}
+			// 因为是单例的，所以当有多个同时访问时需要使用sync.Map。
 			li, ok = singletons.Load(name)
 			if ok {
 				l = li.(Interface)
@@ -79,6 +82,7 @@ func GetLogger(loggerOptions ...Option) (Interface, error) {
 		loggers = append(loggers, l)
 	}
 
+	// 根据上述的信息创建日志记录器
 	return NewEntry(loggers), nil
 }
 
@@ -89,6 +93,7 @@ func GetLogger(loggerOptions ...Option) (Interface, error) {
 //
 // If failed, a nil sweeper and a non-nil error will be returned.
 // Otherwise, a non nil sweeper is returned with nil error.
+// 用来清理日志
 func GetSweeper(context context.Context, sweeperOptions ...Option) (sweeper.Interface, error) {
 	// No default sweeper will provdie
 	// If no one is configured, directly return nil with error
@@ -131,6 +136,7 @@ func GetSweeper(context context.Context, sweeperOptions ...Option) (sweeper.Inte
 //   configured but initialize failed: a nil log data getter and a non-nil error will be returned.
 //   no getter configured: a nil log data getter with a nil error are returned
 // Otherwise, a non nil log data getter is returned with nil error.
+// 日志收集器
 func GetLogDataGetter(loggerOptions ...Option) (getter.Interface, error) {
 	if len(loggerOptions) == 0 {
 		// If no options, directly return nil interface with error
@@ -203,6 +209,7 @@ func Init(ctx context.Context) error {
 	singletons.Store(systemKeyServiceLogger, lg)
 
 	jOptions := []Option{}
+	// 默认情况下是没有 sweepers 的
 	// Append configured sweepers in job loggers if existing
 	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
 		jOptions = append(jOptions, BackendOption(lc.Name, lc.Level, lc.Settings))
