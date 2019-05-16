@@ -112,6 +112,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	// To indicate if any errors occurred
 	var err error
 	// Block here
+	// 定义系统信号通道，主要是中断和杀死信号
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
 	select {

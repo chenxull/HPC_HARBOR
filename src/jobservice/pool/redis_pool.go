@@ -185,6 +185,7 @@ func (gcwp *GoCraftWorkPool) Start() error {
 		gcwp.statsManager.Start()
 
 		// blocking call。任务调度是阻塞的，调度器是专门针对于周期性任务来设计的。
+		//启动任务队列接受任务。
 		gcwp.scheduler.Start()
 	}()
 
@@ -201,9 +202,9 @@ func (gcwp *GoCraftWorkPool) Start() error {
 			logger.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
 		}
 
-		// Append middlewares
+		// Append middlewares。增加 workpool 的中间件，用来携带日志功能
 		gcwp.pool.Middleware((*RedisPoolContext).logJob)
-
+		//启动 worker pool
 		gcwp.pool.Start()
 		logger.Infof("Redis worker pool is started")
 
@@ -288,6 +289,7 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 	// check the uniqueness of the job,
 	// if no duplicated job existing (including the running jobs),
 	// set the unique flag.
+	// 检测此 job 是队列中唯一的，避免重复操作
 	if isUnique {
 		if err = gcwp.deDuplicator.Unique(jobName, params); err != nil {
 			return models.JobStats{}, err
@@ -297,7 +299,7 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 			return models.JobStats{}, err
 		}
 	} else {
-		// Enqueue job
+		// Enqueue job.将 job 入工作队列
 		if j, err = gcwp.enqueuer.Enqueue(jobName, params); err != nil {
 			return models.JobStats{}, err
 		}
@@ -308,9 +310,11 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 		return models.JobStats{}, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
+	// 获取工作状态
 	res := generateResult(j, job.JobKindGeneric, isUnique)
 	// Save data with async way. Once it fails to do, let it escape
 	// The client method may help if the job is still in progress when get stats of this job
+	// 消息会放入 statsManager 的 processChan 中
 	gcwp.statsManager.Save(res)
 
 	return res, nil
@@ -390,12 +394,14 @@ func (gcwp *GoCraftWorkPool) GetJobStats(jobID string) (models.JobStats, error) 
 		return models.JobStats{}, errors.New("empty job ID")
 	}
 
+	// 在后端的 redis worker pool 中还定义了一个状态管理器，专门用来管理 job 状态信息
 	return gcwp.statsManager.Retrieve(jobID)
 }
 
 // Stats of pool
 func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 	// Get the status of workerpool via client
+	// 使用 client 向 redis 发送心跳请求
 	hbs, err := gcwp.client.WorkerPoolHeartbeats()
 	if err != nil {
 		return models.JobPoolStats{}, err
@@ -438,12 +444,15 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 		return errors.New("empty job ID")
 	}
 
+	// 先获取 job status
 	theJob, err := gcwp.statsManager.Retrieve(jobID)
 	if err != nil {
 		return err
 	}
 
+	// 根据 job 的种类，执行不同的 stop 策略
 	switch theJob.Stats.JobKind {
+	// 对于 generic 类型的 job 来说，只有处于 running 状态的才可以 stop
 	case job.JobKindGeneric:
 		// Only running job can be stopped
 		if theJob.Stats.Status != job.JobStatusRunning {
@@ -452,6 +461,7 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 	case job.JobKindScheduled:
 		// we need to delete the scheduled job in the queue if it is not running yet
 		// otherwise, stop it.
+		// 对于 scheduled 类型的 job，如果处于等待状态，直接从调度表中删除。然后将其状态更新为 stopped
 		if theJob.Stats.Status == job.JobStatusPending {
 			if err := gcwp.client.DeleteScheduledJob(theJob.Stats.RunAt, jobID); err != nil {
 				return err
@@ -464,6 +474,12 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 
 			return nil
 		}
+		/*
+		对于 Periodic 类型的 job ，需要进行多步操作。
+		1. 删除 周期性job 的 policy
+		2. 删除用来调度这个周期性 job 的实例
+		3. 让其过期
+		*/
 	case job.JobKindPeriodic:
 		// firstly delete the periodic job policy
 		if err := gcwp.scheduler.UnSchedule(jobID); err != nil {

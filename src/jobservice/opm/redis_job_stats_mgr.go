@@ -132,6 +132,7 @@ func (rjs *RedisJobStatsManager) Shutdown() {
 
 // Save is implementation of same method in JobStatsManager interface.
 // Async method
+//异步的方法
 func (rjs *RedisJobStatsManager) Save(jobStats models.JobStats) {
 	item := &queueItem{
 		Op:   opSaveStats,
@@ -147,12 +148,12 @@ func (rjs *RedisJobStatsManager) Retrieve(jobID string) (models.JobStats, error)
 	if utils.IsEmptyStr(jobID) {
 		return models.JobStats{}, errors.New("empty job ID")
 	}
-
+	// 真正和 redis 进行通信的函数，获取 job 状态信息
 	res, err := rjs.getJobStats(jobID)
 	if err != nil {
 		return models.JobStats{}, err
 	}
-
+	// 什么样的 job 还有子命令需要执行？周期性任务，需要多次执行
 	if res.Stats.IsMultipleExecutions {
 		executions, err := rjs.GetExecutions(jobID)
 		if err != nil {
@@ -167,6 +168,7 @@ func (rjs *RedisJobStatsManager) Retrieve(jobID string) (models.JobStats, error)
 
 // SetJobStatus is implementation of same method in JobStatsManager interface.
 // Async method
+// 设置 job 的状态
 func (rjs *RedisJobStatsManager) SetJobStatus(jobID string, status string) {
 	if utils.IsEmptyStr(jobID) || utils.IsEmptyStr(status) {
 		return
@@ -266,6 +268,7 @@ func (rjs *RedisJobStatsManager) SendCommand(jobID string, command string, isCac
 	}
 
 	// Directly add to op commands maintaining list
+	// 将操作信息记录到oPCommands.commands[jobID]=&oPCommand 中
 	return rjs.opCommands.Push(jobID, command)
 }
 
@@ -324,10 +327,12 @@ func (rjs *RedisJobStatsManager) RegisterHook(jobID string, hookURL string, isCa
 		return errors.New("invalid hook url")
 	}
 
+	// 使用消息服务器来发送消息到 redis
 	if !isCached {
 		return rjs.saveHook(jobID, hookURL)
 	}
 
+	// 直接存储在内存中
 	rjs.hookStore.Add(jobID, hookURL)
 
 	return nil
@@ -453,6 +458,7 @@ func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status,
 			err     error
 		)
 
+		// 获取 hookurl
 		hookURL, ok = rjs.hookStore.Get(jobID)
 		if !ok {
 			// Retrieve from backend
@@ -559,10 +565,13 @@ func (rjs *RedisJobStatsManager) dieAt(jobID string, baseTime int64) error {
 }
 
 func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, error) {
+	// 获取 redis 的一个连接
 	conn := rjs.redisPool.Get()
 	defer conn.Close()
 
+	// harbor_job_service_namespace:job_stats:jobID
 	key := utils.KeyJobStats(rjs.namespace, jobID)
+	// 返回哈希表 key 中，所有的域和值。Strings 方法将返回值转化为[]string 类型
 	vals, err := redis.Strings(conn.Do("HGETALL", key))
 	if err != nil {
 		return models.JobStats{}, err
@@ -575,6 +584,7 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 	res := models.JobStats{
 		Stats: &models.JobStatData{},
 	}
+	// 遍历提取 返回值中的信息。因为返回域和值是一起出现的，所以要加 2
 	for i, l := 0, len(vals); i < l; i = i + 2 {
 		prop := vals[i]
 		value := vals[i+1]

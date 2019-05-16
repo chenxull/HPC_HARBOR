@@ -68,6 +68,7 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 		res models.JobStats
 		err error
 	)
+	// 根据 job 类型将其安排到不同的调度队列中
 	switch req.Job.Metadata.JobKind {
 	case job.JobKindScheduled:
 		res, err = c.backendPool.Schedule(
@@ -81,12 +82,14 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 			req.Job.Parameters,
 			req.Job.Metadata.Cron)
 	default:
+		// 默认工作类型为 Generic，对应到前端为
 		res, err = c.backendPool.Enqueue(req.Job.Name, req.Job.Parameters, req.Job.Metadata.IsUnique)
 	}
 
 	// Register status hook?
 	if err == nil {
 		if !utils.IsEmptyStr(req.Job.StatusHook) {
+			// 在 redis 中注册 jobid+status hook
 			if err := c.backendPool.RegisterHook(res.Stats.JobID, req.Job.StatusHook); err != nil {
 				res.Stats.HookStatus = hookDeactivated
 			} else {
@@ -99,11 +102,12 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 }
 
 // GetJob is implementation of same method in core interface.
-func (c *Controller) GetJob(jobID string) (models.JobStats, error) {
+func (c *Controller)  GetJob(jobID string) (models.JobStats, error) {
 	if utils.IsEmptyStr(jobID) {
 		return models.JobStats{}, errors.New("empty job ID")
 	}
 
+	// 从 后端的 redis 中获取信息
 	return c.backendPool.GetJobStats(jobID)
 }
 

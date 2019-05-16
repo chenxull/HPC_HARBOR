@@ -34,28 +34,35 @@ import (
 // Handler defines approaches to handle the http requests.
 type Handler interface {
 	// HandleLaunchJobReq is used to handle the job submission request.
+	//用来处理 job 的提交请求
 	HandleLaunchJobReq(w http.ResponseWriter, req *http.Request)
 
 	// HandleGetJobReq is used to handle the job stats query request.
+	// 用来处理 查询 job 状态请求
 	HandleGetJobReq(w http.ResponseWriter, req *http.Request)
 
 	// HandleJobActionReq is used to handle the job action requests (stop/retry).
+	// 用来处理 对 job 的控制请求
 	HandleJobActionReq(w http.ResponseWriter, req *http.Request)
 
 	// HandleCheckStatusReq is used to handle the job service healthy status checking request.
+	// 健康检查
 	HandleCheckStatusReq(w http.ResponseWriter, req *http.Request)
 
 	// HandleJobLogReq is used to handle the request of getting job logs
+	// 获取 job 日志
 	HandleJobLogReq(w http.ResponseWriter, req *http.Request)
 }
 
 // DefaultHandler is the default request handler which implements the Handler interface.
+// 继承了 core 中的接口
 type DefaultHandler struct {
 	controller core.Interface
 }
 
 // NewDefaultHandler is constructor of DefaultHandler.
 func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
+	// ctl 是 redis worker pool 的控制器
 	return &DefaultHandler{
 		controller: ctl,
 	}
@@ -63,6 +70,7 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 
 // HandleLaunchJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
+	// 检测是否获取到 control
 	if !dh.preCheck(w, req) {
 		return
 	}
@@ -81,6 +89,7 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	}
 
 	// Pass request to the controller for the follow-up.
+	// 将 request 交给 controller 进行控制，根据 job 类型放入不同的任务队列，检测是否带有 hook
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
 		if errs.IsConflictError(err) {
@@ -92,7 +101,7 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 		}
 		return
 	}
-
+	// 将处理好的 job 状态信息发送回去
 	dh.handleJSONData(w, req, http.StatusAccepted, jobStats)
 }
 
@@ -102,9 +111,11 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	// 获取路由中的参数
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
+	// 调用 redis 控制其来获取指定 job 的状态信息，经历了多个接口类型的函数，core -> pool -> opm
 	jobStats, err := dh.controller.GetJob(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
@@ -117,10 +128,12 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	// 发送数据给 core
 	dh.handleJSONData(w, req, http.StatusOK, jobStats)
 }
 
 // HandleJobActionReq is implementation of method defined in interface 'Handler'
+// 对 job 进行控制 stop/cancel
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w, req) {
 		return
@@ -135,13 +148,14 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	// unmarshal data
+	// unmarshal data。只有一个参数 action
 	jobActionReq := models.JobActionRequest{}
 	if err = json.Unmarshal(data, &jobActionReq); err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
 		return
 	}
 
+	// stop cancel retry 三中操作
 	switch jobActionReq.Action {
 	case opm.CtlCommandStop:
 		if err := dh.controller.StopJob(jobID); err != nil {
@@ -181,12 +195,14 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 		return
 	}
 
+	// 日志记录
 	dh.log(req, http.StatusNoContent, string(data))
 
 	w.WriteHeader(http.StatusNoContent) // only header, no content returned
 }
 
 // HandleCheckStatusReq is implementation of method defined in interface 'Handler'
+// 健康检查，获取 redis 的健康状态
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w, req) {
 		return

@@ -65,6 +65,7 @@ type Interface interface {
 	//
 	// Return:
 	//  error if failed to do
+	// 接受上传来的调度策略并存储
 	AcceptPeriodicPolicy(policy *PeriodicJobPolicy) error
 
 	// Remove the specified policy from the cache if it is existing
@@ -73,5 +74,6 @@ type Interface interface {
 	//
 	// Return:
 	//  the ptr of the being deletd policy
+	// 移除调度策略
 	RemovePeriodicPolicy(policyID string) *PeriodicJobPolicy
 }

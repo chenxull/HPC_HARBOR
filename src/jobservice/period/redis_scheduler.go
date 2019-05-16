@@ -171,6 +171,7 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 		return errors.New("cron job policy ID is empty")
 	}
 
+	// 连接到 redis，发送ZSCORE指令，返回有序集 key 中，成员 member 的 score 值。
 	score, err := rps.getScoreByID(cronJobPolicyID)
 	if err == redis.ErrNil {
 		return errs.NoObjectFoundError(err.Error())
@@ -195,11 +196,12 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 	// REM from redis db
 	conn := rps.redisPool.Get()
 	defer conn.Close()
-
+	//MULTI 指令标记一个事务块的开始，事务块内的多条命令会按照先后顺序被放进一个队列当中
 	err = conn.Send("MULTI")
 	if err != nil {
 		return err
 	}
+	//ZREMRANGEBYSCORE指令 移除有序集中，指定分数（score）区间内的所有成员。
 	err = conn.Send("ZREMRANGEBYSCORE", utils.KeyPeriodicPolicy(rps.namespace), score, score) // Accurately remove the item with the specified score
 	if err != nil {
 		return err
@@ -208,11 +210,13 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 	if err != nil {
 		return err
 	}
+	// Publish 命令用于将信息发送到指定的频道。
 	err = conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON)
 	if err != nil {
 		return err
 	}
 
+	// EXEC 指令执行所有事务块内的命令
 	_, err = conn.Do("EXEC")
 
 	return err

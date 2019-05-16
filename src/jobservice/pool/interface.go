@@ -63,6 +63,7 @@ type Interface interface {
 	// Returns:
 	//  models.JobStats: the stats of enqueuing job if succeed
 	//  error          : if failed to enqueue
+	// 调度 job 的执行
 	Schedule(jobName string, params models.Parameters, runAfterSeconds uint64, isUnique bool) (models.JobStats, error)
 
 	// Schedule the job periodically running.
@@ -74,6 +75,7 @@ type Interface interface {
 	// Returns:
 	//  models.JobStats: the stats of enqueuing job if succeed
 	//  error          : if failed to enqueue
+	// 调度 job 周期性执行
 	PeriodicallyEnqueue(jobName string, params models.Parameters, cronSetting string) (models.JobStats, error)
 
 	// Return the status info of the pool.
@@ -81,6 +83,7 @@ type Interface interface {
 	// Returns:
 	//  models.JobPoolStats : the stats info of all running pools
 	//  error               :  failed to check
+	// 获取 worker pool 的信息
 	Stats() (models.JobPoolStats, error)
 
 	// Check if the job has been already registered.
@@ -90,6 +93,7 @@ type Interface interface {
 	// Returns:
 	// interface{} : the job type of the known job if it's existing
 	// bool        : if the known job requires parameters
+	// 检测 job 是否在 worker pool 中注册
 	IsKnownJob(name string) (interface{}, bool)
 
 	// Validate the parameters of the known job
@@ -99,7 +103,7 @@ type Interface interface {
 	//
 	// Return:
 	//  error if parameters are not valid
-
+	// 验证 job 的参数
 	ValidateJobParameters(jobType interface{}, params map[string]interface{}) error
 
 	// Get the stats of the specified job

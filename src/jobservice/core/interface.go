@@ -20,6 +20,7 @@ import (
 )
 
 // Interface defines the related main methods of job operation.
+//定义了 对 job 操作的主要方法
 type Interface interface {
 	// LaunchJob is used to handle the job submission request.
 	//

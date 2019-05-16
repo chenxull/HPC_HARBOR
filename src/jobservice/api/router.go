@@ -48,6 +48,7 @@ type BaseRouter struct {
 }
 
 // NewBaseRouter is the constructor of BaseRouter.
+// 基础路由，在 jobservice 启动的过程中使用
 func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	br := &BaseRouter{
 		router:        mux.NewRouter(),
@@ -62,10 +63,12 @@ func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 }
 
 // ServeHTTP is the implementation of Router interface.
+// 用来处理 http 请求
 func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// No auth required for /stats as it is a health check endpoint
 	// Do auth for other services
 	if req.URL.String() != fmt.Sprintf("%s/%s/stats", baseRoute, apiVersion) {
+		// 对请求进行验证
 		if err := br.authenticator.DoAuth(req); err != nil {
 			authErr := errs.UnauthorizedError(err)
 			logger.Errorf("Serve http request '%s %s' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
@@ -76,6 +79,7 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Directly pass requests to the server mux.
+	// 通过验证开始服务
 	br.router.ServeHTTP(w, req)
 }
 

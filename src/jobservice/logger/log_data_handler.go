@@ -8,6 +8,7 @@ import (
 
 // Retrieve is wrapper func for getter.Retrieve
 func Retrieve(logID string) ([]byte, error) {
+	// 载入日志收集器
 	val, ok := singletons.Load(systemKeyLogDataGetter)
 	if !ok {
 		return nil, errors.New("no log data getter is configured")

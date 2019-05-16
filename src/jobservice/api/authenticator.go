@@ -56,15 +56,18 @@ func (sa *SecretAuthenticator) DoAuth(req *http.Request) error {
 	}
 
 	if !strings.HasPrefix(h, secretPrefix) {
+		// 授权信息的格式为：Authorization Harbor-Secret ---
 		return fmt.Errorf("'%s' should start with '%s' but got '%s' now", authHeader, secretPrefix, h)
 	}
 
+	// 提取出请求中的授权信息
 	secret := strings.TrimSpace(strings.TrimPrefix(h, secretPrefix))
 	// incase both two are empty
 	if utils.IsEmptyStr(secret) {
 		return errors.New("empty secret is not allowed")
 	}
 
+	// 获取期望的授权信息，并与请求中的授权信息比较
 	expectedSecret := config.GetUIAuthSecret()
 	if expectedSecret != secret {
 		return errors.New("unauthorized")
