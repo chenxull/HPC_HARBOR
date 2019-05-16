@@ -20,6 +20,7 @@ import "github.com/goharbor/harbor/src/jobservice/models"
 type Range int
 
 // JobStatsManager defines the methods to handle stats of job.
+// 用来处理 job 的处理状态。
 type JobStatsManager interface {
 	// Start to serve
 	Start()
@@ -31,6 +32,7 @@ type JobStatsManager interface {
 	// Async method to retry and improve performance
 	//
 	// jobStats models.JobStats : the job stats to be saved
+	// 存储工作状态?是保存到数据库还是内存中？
 	Save(jobStats models.JobStats)
 
 	// Get the job stats from backend store
@@ -39,6 +41,7 @@ type JobStatsManager interface {
 	// Returns:
 	//  models.JobStats : job stats data
 	//  error           : error if meet any problems
+	// 从后端存储中获取 job 状态
 	Retrieve(jobID string) (models.JobStats, error)
 
 	// Update the properties of the job stats
@@ -48,10 +51,12 @@ type JobStatsManager interface {
 	//
 	// Returns:
 	//  error if update failed
+	// 更新 job 状态的参数
 	Update(jobID string, fieldAndValues ...interface{}) error
 
 	// SetJobStatus will mark the status of job to the specified one
 	// Async method to retry
+	// 指定 job 的状态
 	SetJobStatus(jobID string, status string)
 
 	// Send command fro the specified job
@@ -62,6 +67,7 @@ type JobStatsManager interface {
 	//
 	// Returns:
 	//  error if it was not successfully sent
+	// 给指定的 job 发送 command
 	SendCommand(jobID string, command string, isCached bool) error
 
 	// CtlCommand checks if control command is fired for the specified job.
@@ -71,6 +77,7 @@ type JobStatsManager interface {
 	// Returns:
 	//  the command if it was fired
 	//  error if it was not fired yet to meet some other problems
+	// 检测 job 的 control command 是否存在
 	CtlCommand(jobID string) (string, error)
 
 	// CheckIn message for the specified job like detailed progress info.
@@ -85,6 +92,7 @@ type JobStatsManager interface {
 	// jobID string   : ID of the job
 	// message string : The message being checked in
 	//
+	// 用时间标记失败的任务
 	DieAt(jobID string, dieAt int64)
 
 	// RegisterHook is used to save the hook url or cache the url in memory.
@@ -95,6 +103,7 @@ type JobStatsManager interface {
 	//
 	// Returns:
 	//  error if meet any problems
+	// 保存 hook url 或者在内存中存储
 	RegisterHook(jobID string, hookURL string, isCached bool) error
 
 	// Get hook returns the web hook url for the specified job if it is registered
@@ -104,6 +113,7 @@ type JobStatsManager interface {
 	// Returns:
 	//  the web hook url if existing
 	//  non-nil error if meet any problems
+	// 获取指定 job 的 hook url
 	GetHook(jobID string) (string, error)
 
 	// Mark the periodic job stats expired
@@ -112,6 +122,7 @@ type JobStatsManager interface {
 	//
 	// Returns:
 	//  error if meet any problems
+	// 将指定的周期性job 标记为过期的
 	ExpirePeriodicJobStats(jobID string) error
 
 	// Persist the links between upstream job and the executions.
@@ -121,6 +132,7 @@ type JobStatsManager interface {
 	//
 	// Returns:
 	//  error if meet any issues
+	// 持久化存储 上游 job 和当前 job 的执行之间的关系。
 	AttachExecution(upstreamJobID string, executions ...string) error
 
 	// Get all the executions (IDs) fro the specified upstream Job.
@@ -133,5 +145,6 @@ type JobStatsManager interface {
 	// Returns:
 	//  the ID list of the executions if no error occurred
 	//  or a non-nil error is returned
+	// 从指定的上游 job，获取所有正在执行的 jobid
 	GetExecutions(upstreamJobID string, ranges ...Range) ([]string, error)
 }

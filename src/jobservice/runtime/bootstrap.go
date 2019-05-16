@@ -65,6 +65,7 @@ func (bs *Bootstrap) SetJobContextInitializer(initializer env.JobContextInitiali
 // LoadAndRun will load configurations, initialize components and then start the related process to serve requests.
 // Return error if meet any problems.
 func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) {
+	// 父 context 的建立
 	rootContext := &env.Context{
 		SystemContext: ctx,
 		WG:            &sync.WaitGroup{},
@@ -74,6 +75,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	// Build specified job context
 	if bs.jobConextInitializer != nil {
 		if jobCtx, err := bs.jobConextInitializer(rootContext); err == nil {
+			// 用main.go 中定义的 jobcontext 初始器来对 rootcontext 进行加工，将 jobcontext 与 rootcontext 绑定。
 			rootContext.JobContext = jobCtx
 		} else {
 			logger.Fatalf("Failed to initialize job context: %s\n", err)
@@ -85,6 +87,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		backendPool pool.Interface
 		wpErr       error
 	)
+	// 初始化并启动工作池，当有 job 来是分配 work 来执行。
 	if config.DefaultConfig.PoolConfig.Backend == config.JobServicePoolBackendRedis {
 		backendPool, wpErr = bs.loadAndRunRedisWorkerPool(rootContext, config.DefaultConfig)
 		if wpErr != nil {
@@ -173,10 +176,10 @@ func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configura
 // Load and run the worker pool
 func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) (pool.Interface, error) {
 	redisPool := &redis.Pool{
-		MaxActive: 6,
+		MaxActive: 6, // 指定时间内允许的最大连接数
 		MaxIdle:   6,
 		Wait:      true,
-		Dial: func() (redis.Conn, error) {
+		Dial: func() (redis.Conn, error) { // 连接到 redis
 			return redis.DialURL(
 				cfg.PoolConfig.RedisPoolCfg.RedisURL,
 				redis.DialConnectTimeout(dialConnectionTimeout),
@@ -184,6 +187,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 				redis.DialWriteTimeout(dialWriteTimeout),
 			)
 		},
+		// 检测空闲连接的健康
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			if time.Since(t) < time.Minute {
 				return nil
@@ -203,6 +207,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		// exit
 		return nil, err
 	}
+	// 注册各种类型的 job
 	if err := redisWorkerPool.RegisterJobs(
 		map[string]interface{}{
 			job.ImageScanJob:    (*scan.ClairJob)(nil),
@@ -216,6 +221,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		return nil, err
 	}
 
+	//	启动redis 工作池
 	if err := redisWorkerPool.Start(); err != nil {
 		return nil, err
 	}

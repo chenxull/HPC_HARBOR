@@ -36,6 +36,8 @@ const (
 )
 
 // MessageServer implements the sub/pub mechanism via redis to do async message exchanging.
+// 订阅/发布模式，实现了消息的异步交换
+//这个功能提供两种信息机制， 分别是订阅/发布到频道和订阅/发布到模式
 type MessageServer struct {
 	context   context.Context
 	redisPool *redis.Pool
@@ -59,13 +61,15 @@ func (ms *MessageServer) Start() error {
 		logger.Info("Message server is stopped")
 	}()
 
+	// 获取 redis 连接
 	conn := ms.redisPool.Get() // Get one backend connection!
+	// 使这个链接带有 subscribers 方法
 	psc := redis.PubSubConn{
 		Conn: conn,
 	}
 	defer psc.Close()
 
-	// Subscribe channel
+	// Subscribe channel。创建订阅通道，用来和在此通道上的 client 进行绑定。创建 period：policies：notifications 的订阅频道
 	err := psc.Subscribe(redis.Args{}.AddFlat(utils.KeyPeriodicNotification(ms.namespace))...)
 	if err != nil {
 		return err
@@ -74,15 +78,18 @@ func (ms *MessageServer) Start() error {
 	done := make(chan error, 1)
 	go func() {
 		for {
+			// 接受来自 消息服务器中 pub/sub 通道上的消息
 			switch res := psc.Receive().(type) {
 			case error:
 				done <- fmt.Errorf("error occurred when receiving from pub/sub channel of message server: %s", res.(error).Error())
+			//	消息类型
 			case redis.Message:
 				m := &models.Message{}
 				if err := json.Unmarshal(res.Data, m); err != nil {
 					// logged
 					logger.Warningf("Read invalid message: %s\n", res.Data)
 				}
+				// 调用之前注册的各种回调处理函数，key 为事件名称，val 是处理函数方法
 				if callback, ok := ms.callbacks[m.Event]; !ok {
 					// logged
 					logger.Warningf("no handler to handle event %s\n", m.Event)
@@ -91,6 +98,7 @@ func (ms *MessageServer) Start() error {
 					logger.Infof("Receive event '%s' with data(unformatted): %+#v\n", m.Event, m.Data)
 					// Try to recover the concrete type
 					var converted interface{}
+					// 找出具体的事件类型，用 converted 对事件内容进行包装
 					switch m.Event {
 					case period.EventSchedulePeriodicPolicy,
 						period.EventUnSchedulePeriodicPolicy:
@@ -110,6 +118,7 @@ func (ms *MessageServer) Start() error {
 						// no need to convert []string
 						converted = m.Data
 					}
+					// 使用上述获取的回调处理函数对事件进行处理
 					res := callback.Call([]reflect.Value{reflect.ValueOf(converted)})
 					e := res[0].Interface()
 					if e != nil {
@@ -118,6 +127,7 @@ func (ms *MessageServer) Start() error {
 						logger.Errorf("Failed to fire callback with error: %s\n", err)
 					}
 				}
+			//	订阅信息,订阅具体的 redis channel 或者 unsubscribe
 			case redis.Subscription:
 				switch res.Kind {
 				case "subscribe":
@@ -133,12 +143,13 @@ func (ms *MessageServer) Start() error {
 		}
 	}()
 
+	// 完成上述工作之后，信息服务器启动完毕
 	logger.Info("Message server is started")
 
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
-	// blocking here
+	// blocking here。每隔一分钟检测连接情况，用来处理完成消息。
 	for err == nil {
 		select {
 		case <-ticker.C:
@@ -161,6 +172,7 @@ func (ms *MessageServer) Subscribe(event string, callback interface{}) error {
 		return errors.New("empty event is not allowed")
 	}
 
+	// 验证回调处理函数的正确性
 	handler, err := validateCallbackFunc(callback)
 	if err != nil {
 		return err

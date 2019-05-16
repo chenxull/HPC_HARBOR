@@ -113,7 +113,7 @@ func (gcwp *GoCraftWorkPool) Start() error {
 	}
 
 	done := make(chan interface{}, 1)
-
+	// 非阻塞的
 	gcwp.context.WG.Add(1)
 	go func() {
 		var err error
@@ -127,27 +127,31 @@ func (gcwp *GoCraftWorkPool) Start() error {
 			}
 		}()
 
-		// Register callbacks
+		// Register callbacks。订阅各种消息格式
 		if err = gcwp.messageServer.Subscribe(period.EventSchedulePeriodicPolicy,
 			func(data interface{}) error {
+				// 在内存中存储周期性的任务数据,数据的类型必须为 PeriodicJobPolicy
 				return gcwp.handleSchedulePolicy(data)
 			}); err != nil {
 			return
 		}
 		if err = gcwp.messageServer.Subscribe(period.EventUnSchedulePeriodicPolicy,
 			func(data interface{}) error {
+				// 从内存中取消指定的周期性的任务
 				return gcwp.handleUnSchedulePolicy(data)
 			}); err != nil {
 			return
 		}
 		if err = gcwp.messageServer.Subscribe(opm.EventRegisterStatusHook,
 			func(data interface{}) error {
+				//  在内存中存储 hook url
 				return gcwp.handleRegisterStatusHook(data)
 			}); err != nil {
 			return
 		}
 		if err = gcwp.messageServer.Subscribe(opm.EventFireCommand,
 			func(data interface{}) error {
+				//  将任务的操作加入到maintaining list中
 				return gcwp.handleOPCommandFiring(data)
 			}); err != nil {
 			return
@@ -156,6 +160,7 @@ func (gcwp *GoCraftWorkPool) Start() error {
 		startTimes := 0
 	START_MSG_SERVER:
 		// Start message server
+		// messageServer 就是实现消息异步交换的处理器
 		if err = gcwp.messageServer.Start(); err != nil {
 			logger.Errorf("Message server exits with error: %s\n", err.Error())
 			if startTimes < msgServerRetryTimes {
@@ -175,11 +180,11 @@ func (gcwp *GoCraftWorkPool) Start() error {
 			gcwp.context.WG.Done()
 			gcwp.statsManager.Shutdown()
 		}()
-		// Start stats manager
+		// Start stats manager。状态管理器是非阻塞的
 		// None-blocking
 		gcwp.statsManager.Start()
 
-		// blocking call
+		// blocking call。任务调度是阻塞的，调度器是专门针对于周期性任务来设计的。
 		gcwp.scheduler.Start()
 	}()
 
@@ -703,6 +708,7 @@ func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc)
 
 // Ping the redis server
 func (gcwp *GoCraftWorkPool) ping() error {
+	// 获取 redis 连接
 	conn := gcwp.redisPool.Get()
 	defer conn.Close()
 

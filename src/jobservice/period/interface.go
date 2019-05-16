@@ -17,6 +17,7 @@ package period
 import "github.com/goharbor/harbor/src/jobservice/models"
 
 // Interface defines operations the periodic scheduler should have.
+// 周期性调度任务应该有的操作
 type Interface interface {
 	// Schedule the specified cron job policy.
 	//
@@ -28,6 +29,7 @@ type Interface interface {
 	//  The uuid of the cron job policy
 	//  The latest next trigger time
 	//  error if failed to schedule
+	// 包含了具体周期性调度任务的执行策略
 	Schedule(jobName string, params models.Parameters, cronSpec string) (string, int64, error)
 
 	// Unschedule the specified cron job policy.
@@ -36,21 +38,25 @@ type Interface interface {
 	//
 	// Return:
 	//  error if failed to unschedule
+	// 取消调度任务
 	UnSchedule(cronJobPolicyID string) error
 
 	// Load and cache data if needed
 	//
 	// Return:
 	//  error if failed to do
+	// 载入需要的数据
 	Load() error
 
 	// Clear all the cron job policies.
 	//
 	// Return:
 	//  error if failed to do
+	// 清除所有的 周期性任务的调度策略
 	Clear() error
 
 	// Start to serve
+	// 启动服务
 	Start()
 
 	// Accept the pushed policy and cache it
