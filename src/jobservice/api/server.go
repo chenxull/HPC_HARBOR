@@ -96,6 +96,7 @@ func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
 }
 
 // Start the server to serve requests.
+// 启动 API 服务器
 func (s *Server) Start() {
 	s.context.WG.Add(1)
 

@@ -34,8 +34,10 @@ const (
 
 // Controller implement the core interface and provides related job handle methods.
 // Controller will coordinate the lower components to complete the process as a commander role.
+// Controller 充当一个指挥官的角色
 type Controller struct {
 	// Refer the backend pool
+	// Controller 结构体继承了 pool的 interface，用来实现对 redis pool 的各种操作.
 	backendPool pool.Interface
 }
 
@@ -53,12 +55,13 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 	}
 
 	// Validate job name
+	// 从 redis 中查询，此job 的名字是否存储在 redis 中
 	jobType, isKnownJob := c.backendPool.IsKnownJob(req.Job.Name)
 	if !isKnownJob {
 		return models.JobStats{}, fmt.Errorf("job with name '%s' is unknown", req.Job.Name)
 	}
 
-	// Validate parameters
+	// Validate parameters。通过接口反射的方式 根据 jobType 获取到了job 的具体类型（GC,Clair 等）
 	if err := c.backendPool.ValidateJobParameters(jobType, req.Job.Parameters); err != nil {
 		return models.JobStats{}, err
 	}
@@ -68,7 +71,7 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 		res models.JobStats
 		err error
 	)
-	// 根据 job 类型将其安排到不同的调度队列中
+	// 根据 job 类型将其安排到不同的调度队列中：Scheduled，Periodic，Generic
 	switch req.Job.Metadata.JobKind {
 	case job.JobKindScheduled:
 		res, err = c.backendPool.Schedule(
@@ -157,6 +160,10 @@ func (c *Controller) CheckStatus() (models.JobPoolStats, error) {
 	return c.backendPool.Stats()
 }
 
+/*
+	 验证函数的逻辑如下：
+		1. 检测不同类型任务需要满足的基本条件
+*/
 func validJobReq(req models.JobRequest) error {
 	if req.Job == nil {
 		return errors.New("empty job request is not allowed")

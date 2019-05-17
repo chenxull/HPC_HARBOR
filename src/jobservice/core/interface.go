@@ -68,5 +68,5 @@ type Interface interface {
 	CheckStatus() (models.JobPoolStats, error)
 
 	// GetJobLogData is used to return the log text data for the specified job if exists
-	GetJobLogData(jobID string) ([]byte, error)
+	 GetJobLogData(jobID string) ([]byte, error)
 }

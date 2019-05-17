@@ -58,7 +58,7 @@ func TestUnAuthorizedAccess(t *testing.T) {
 	if strings.Index(err.Error(), "401") == -1 {
 		t.Fatalf("expect '401' but got none 401 error")
 	}
-
+	t.Log(string(res))
 	server.Stop()
 	ctx.WG.Wait()
 }
@@ -70,11 +70,12 @@ func TestLaunchJobFailed(t *testing.T) {
 	server.Start()
 	<-time.After(200 * time.Millisecond)
 
+	// 测试启动任务
 	resData, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs", port), createJobReq(false))
 	if e := expectFormatedError(resData, err); e != nil {
 		t.Error(e)
 	}
-
+	t.Log(string(resData))
 	server.Stop()
 	ctx.WG.Wait()
 }
@@ -267,6 +268,7 @@ func TestGetJobLog(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	t.Log(string(resData))
 	if len(resData) == 0 {
 		t.Fatal("expect job log but got nothing")
 	}
@@ -474,6 +476,7 @@ func createJobStats(name, kind, cron string) models.JobStats {
 func getResult(res []byte) (models.JobStats, error) {
 	obj := models.JobStats{}
 	err := json.Unmarshal(res, &obj)
+
 
 	return obj, err
 }

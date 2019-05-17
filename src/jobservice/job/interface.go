@@ -28,9 +28,11 @@ type CheckOPCmdFunc func() (string, bool)
 type CheckInFunc func(message string)
 
 // LaunchJobFunc is designed to launch sub jobs in the job
+// 用来启动一个 job 中的子 job
 type LaunchJobFunc func(req models.JobRequest) (models.JobStats, error)
 
 // Interface defines the related injection and run entry methods.
+// 定义具体 job 的一些共有方法,如最大失败次数，尝试次数，验证参数合法性，运行 job
 type Interface interface {
 	// Declare how many times the job can be retried if failed.
 	//
@@ -60,5 +62,6 @@ type Interface interface {
 	// Returns:
 	//  error if failed to run. NOTES: If job is stopped or cancelled, a specified error should be returned
 	//
+	// 真正的业务逻辑
 	Run(ctx env.JobContext, params map[string]interface{}) error
 }

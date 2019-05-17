@@ -575,6 +575,7 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 		return errors.New("nil job type")
 	}
 
+	// 获取job 的类型，指扫描任务，GC，垃圾回收等
 	theJ := Wrap(jobType)
 	return theJ.Validate(params)
 }
