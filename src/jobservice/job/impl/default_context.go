@@ -49,6 +49,7 @@ type DefaultContext struct {
 // NewDefaultContext is constructor of building DefaultContext
 func NewDefaultContext(sysCtx context.Context) env.JobContext {
 	return &DefaultContext{
+		// 根 context
 		sysContext: sysCtx,
 		properties: make(map[string]interface{}),
 	}
@@ -56,6 +57,7 @@ func NewDefaultContext(sysCtx context.Context) env.JobContext {
 
 // Build implements the same method in env.JobContext interface
 // This func will build the job execution context before running
+// 构造需要执行 job 的 context，将三个函数通过注入的方式提取到 jobContext 中
 func (c *DefaultContext) Build(dep env.JobData) (env.JobContext, error) {
 	jContext := &DefaultContext{
 		sysContext: c.sysContext,
@@ -77,8 +79,10 @@ func (c *DefaultContext) Build(dep env.JobData) (env.JobContext, error) {
 	}
 
 	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {
+		// 判断 opCommandFunc 为函数类型
 		if reflect.TypeOf(opCommandFunc).Kind() == reflect.Func {
 			if funcRef, ok := opCommandFunc.(job.CheckOPCmdFunc); ok {
+				// 将函数赋值给 job context，这里使用的是依赖注入的方式
 				jContext.opCommandFunc = funcRef
 			}
 		}

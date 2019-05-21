@@ -70,6 +70,7 @@ func (c *Client) ScanLayer(l models.ClairLayer) error {
 		Layer: &l,
 		Error: nil,
 	}
+	// json 化
 	data, err := json.Marshal(layer)
 	if err != nil {
 		return err

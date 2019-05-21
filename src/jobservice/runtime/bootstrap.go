@@ -204,6 +204,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		cfg.PoolConfig.WorkerCount,
 		redisPool)
 	// Register jobs here
+	// 注册 job 信息，在初始的过程中，会执行 DemoJob
 	if err := redisWorkerPool.RegisterJob(impl.KnownJobDemo, (*impl.DemoJob)(nil)); err != nil {
 		// exit
 		return nil, err

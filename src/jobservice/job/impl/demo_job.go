@@ -57,6 +57,7 @@ func (dj *DemoJob) Validate(params map[string]interface{}) error {
 
 // Run the replication logic here.
 func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error {
+	// 从 context 中获取日志配置
 	logger := ctx.GetLogger()
 
 	defer func() {

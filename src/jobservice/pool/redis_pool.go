@@ -72,6 +72,8 @@ type GoCraftWorkPool struct {
 type RedisPoolContext struct{}
 
 // NewGoCraftWorkPool is constructor of goCraftWorkPool.
+// 创建一个 work pool 所需要的东西，任务队列，访问 redis 的客户端
+//调度器，日志清理器，消息通知服务器，
 func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, redisPool *redis.Pool) *GoCraftWorkPool {
 	pool := work.NewWorkerPool(RedisPoolContext{}, workerCount, namespace, redisPool)
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
@@ -222,6 +224,8 @@ func (gcwp *GoCraftWorkPool) Start() error {
 
 // RegisterJob is used to register the job to the pool.
 // j is the type of job
+// 在 RegisterJob 时 就已经开始执行 job 了
+
 func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	if utils.IsEmptyStr(name) || j == nil {
 		return errors.New("job can not be registered with empty name or nil interface")
@@ -238,13 +242,17 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	}
 
 	// Same job implementation can be only registered with one name
+	// 注册过的 job 就需要被执行
 	for jName, jInList := range gcwp.knownJobs {
+		// 判断 job 的类型，在调用不同的 接口实现
 		jobImpl := reflect.TypeOf(j).String()
+		// 判断已有的 job 类型和传入的 job 实现的类型是否相同
 		if reflect.TypeOf(jInList).String() == jobImpl {
 			return fmt.Errorf("Job %s has been already registered with name %s", jobImpl, jName)
 		}
 	}
 
+	// 创建需要 redis 执行的任务
 	redisJob := NewRedisJob(j, gcwp.context, gcwp.statsManager, gcwp.deDuplicator)
 
 	// Get more info from j
@@ -253,8 +261,9 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	gcwp.pool.JobWithOptions(name,
 		work.JobOptions{MaxFails: theJ.MaxFails()},
 		func(job *work.Job) error {
+			// 执行 job 的逻辑重点
 			return redisJob.Run(job)
-		}, // Use generic handler to handle as we do not accept context with this way.
+		}, // Use generic handler to handle as we do not accept context with this way. 这只是测试用 ？
 	)
 	gcwp.knownJobs[name] = j // keep the name of registered jobs as known jobs for future validation
 

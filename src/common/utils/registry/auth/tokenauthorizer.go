@@ -265,6 +265,7 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 // NewStandardTokenAuthorizer returns a standard token authorizer. The authorizer will request a token
 // from token server and add it to the origin request
 // If customizedTokenService is set, the token request will be sent to it instead of the server get from authorizer
+// 返回标准的 token 授权器，授权器会将 token 信息附加到 request` 请求中
 func NewStandardTokenAuthorizer(client *http.Client, credential Credential,
 	customizedTokenService ...string) modifier.Modifier {
 	generator := &standardTokenGenerator{

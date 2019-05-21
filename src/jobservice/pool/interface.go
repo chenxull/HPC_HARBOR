@@ -32,6 +32,7 @@ type Interface interface {
 	//
 	// Return:
 	//  error if failed to register
+	// 在注册到 pool 的同时，也在开始执行 job
 	RegisterJob(name string, job interface{}) error
 
 	// Register multiple jobs.

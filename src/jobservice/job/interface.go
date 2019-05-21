@@ -56,7 +56,7 @@ type Interface interface {
 	// Run the business logic here.
 	// The related arguments will be injected by the workerpool.
 	//
-	// ctx env.JobContext            : Job execution context.
+	// ctx env.JobContext            : Job execution context.  定义的 3 个函数
 	// params map[string]interface{} : parameters with key-pair style for the job execution.
 	//
 	// Returns:

@@ -42,11 +42,13 @@ func GetToken(endpoint string, insecure bool, credential Credential,
 
 func getToken(client *http.Client, credential Credential, realm, service string,
 	scopes []*token.ResourceActions) (*models.Token, error) {
+	//	 u 是 token service 的访问地址
 	u, err := url.Parse(realm)
 	if err != nil {
 		return nil, err
 	}
 	query := u.Query()
+	// 加上访问 token service 的参数，这些参数不能出错
 	query.Add("service", service)
 	for _, scope := range scopes {
 		query.Add("scope", scopeString(scope))
@@ -58,6 +60,7 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 		return nil, err
 	}
 
+	// 如果设置有凭证，给 request 加 Authorization 信息
 	if credential != nil {
 		credential.Modify(req)
 	}
@@ -68,6 +71,7 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 	}
 	defer resp.Body.Close()
 
+	// 获取 token 数据
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err

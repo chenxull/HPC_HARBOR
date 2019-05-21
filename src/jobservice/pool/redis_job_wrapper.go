@@ -97,9 +97,10 @@ func (rj *RedisJob) Run(j *work.Job) error {
 		}
 	}()
 
-	// Wrap job
+	// Wrap job，将其包装为 job.Interface 类型。获取 job 的类型（scan GC）
 	runningJob = Wrap(rj.job)
 
+	// 需要执行的 context，execContext 的类型为JobContext,这里面包含了 3 个执行函数
 	execContext, err = rj.buildContext(j)
 	if err != nil {
 		buildContextFailed = true
@@ -125,9 +126,11 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	}
 
 	// Start to run
+	// 将 job 的状态设置为 running
 	rj.jobRunning(j.ID)
 
 	// Inject data
+	// 注入需要执行的 JobContext 以及 job 的参数
 	err = runningJob.Run(execContext, j.Args)
 
 	// update the proper status
@@ -181,6 +184,7 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 		ExtraData: make(map[string]interface{}),
 	}
 
+	// 在这里的 buildContext 构造了三个用来处理 job 的匿名函数,并存储到JobDate 的 ExtraData 中
 	checkOPCmdFuncFactory := func(jobID string) job.CheckOPCmdFunc {
 		return func() (string, bool) {
 			cmd, err := rj.statsManager.CtlCommand(jobID)
@@ -240,6 +244,7 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 	jData.ExtraData["launchJobFunc"] = launchJobFuncFactory(j.ID)
 
 	// Use default context
+	//   如果此时 JobContext 为空使用默认的
 	if rj.context.JobContext == nil {
 		rj.context.JobContext = impl.NewDefaultContext(rj.context.SystemContext)
 	}

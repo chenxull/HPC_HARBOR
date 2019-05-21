@@ -66,6 +66,7 @@ type Context struct {
 func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
 	return &Context{
 		sysContext:  sysCtx,
+		// 相比于 default context 多的部分
 		adminClient: adminClient,
 		properties:  make(map[string]interface{}),
 	}
@@ -81,6 +82,7 @@ func (c *Context) Init() error {
 
 	for counter == 0 || err != nil {
 		counter++
+		// 从 adminserver 获取配置信息
 		configs, err = c.adminClient.GetCfgs()
 		if err != nil {
 			logger.Errorf("Job context initialization error: %s\n", err.Error())
@@ -124,7 +126,8 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		}
 	}
 
-	// Refresh admin server properties
+	// Refresh admin server properties,
+	//从 adminserver 中获取的配置信息来对 jobcontext 进行配置
 	props, err := c.adminClient.GetCfgs()
 	if err != nil {
 		return nil, err

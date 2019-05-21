@@ -64,6 +64,7 @@ func TestDefaultContext(t *testing.T) {
 
 	logSettings := map[string]interface{}{}
 	logSettings["base_dir"] = os.TempDir()
+	// 日志设置
 	config.DefaultConfig.JobLoggerConfigs = []*config.LoggerConfig{
 		{
 			Level:    "DEBUG",
