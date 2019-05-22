@@ -113,7 +113,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;
-
+        // 事件发送给父组件
         this.create.emit(true);
         this.messageHandlerService.showSuccess("PROJECT.CREATED_SUCCESS");
         this.createProjectOpened = false;
@@ -147,7 +147,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
     this.project = new Project();
     this.hasChanged = false;
     this.isNameValid = true;
-
+    // 打开新建项目的模态框
     this.createProjectOpened = true;
   }
 

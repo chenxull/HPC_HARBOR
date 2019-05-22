@@ -1,5 +1,6 @@
 <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
     <clr-dg-action-bar>
+        <!-- 新建项目按钮        -->
         <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'PROJECT.NEW_PROJECT' | translate}}</button>
         <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length && (isSystemAdmin || canDelete))"

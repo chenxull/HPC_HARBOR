@@ -70,6 +70,7 @@ export class ProjectComponent implements OnInit {
     this.listProject.doSearchProject(this.projectName);
   }
 
+  // 选择要是显示的项目种类
   doFilterProjects(): void {
     this.listProject.doFilterProject(this.selecteType);
   }

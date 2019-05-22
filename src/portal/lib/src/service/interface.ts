@@ -14,7 +14,7 @@ export interface Base {
 
 /**
  * Interface for Repository Info
- *
+ * 存储库的参数信息
  **
  * interface Repository
  * extends {Base}
@@ -32,7 +32,7 @@ export interface RepositoryItem extends Base {
 
 /**
  * Interface for repository
- *
+ * 存储库的接口
  **
  * interface Repository
  */
@@ -43,7 +43,7 @@ export interface Repository {
 
 /**
  * Interface for the tag of repository
- *
+ * 某个具体存储库以及其中镜像的信息的信息
  **
  * interface Tag
  * extends {Base}

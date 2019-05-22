@@ -34,6 +34,7 @@
                 <clr-dg-column [clrDgSortBy]="pullCountComparator">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
+                    <!-- 这个点击事件，会进入到对这个镜像的具体操作                -->
                     <clr-dg-cell><a href="javascript:void(0)" (click)="watchRepoClickEvt(r)"><span *ngIf="withAdmiral" class="list-img"><img [src]="getImgLink(r)"/></span>{{r.name}}</a></clr-dg-cell>
                     <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
                     <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>

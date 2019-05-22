@@ -51,7 +51,7 @@ export class ListProjectComponent implements OnDestroy {
     filteredType = 0; // All projects
     searchKeyword = "";
     selectedRow: Project[]  = [];
-
+  // 会发往父组件
   @Output() addProject = new EventEmitter<void>();
 
     roleInfo = RoleInfo;
@@ -138,9 +138,11 @@ export class ListProjectComponent implements OnDestroy {
     }
 
     goToLink(proId: number): void {
+        // 为何要关闭搜索
         this.searchTrigger.closeSearch(true);
 
         let linkUrl = ["harbor", "projects", proId, "repositories"];
+        // 前端界面的路由内部跳转，进入到project 的具体存储库
         this.router.navigate(linkUrl);
     }
 

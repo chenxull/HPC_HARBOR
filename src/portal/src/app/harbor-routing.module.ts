@@ -65,6 +65,7 @@ const harborRoutes: Routes = [
         canActivate: [SignInGuard]
       },
       {
+        // 登录后显示的第一个页面
         path: 'projects',
         component: ProjectComponent
       },
@@ -137,13 +138,13 @@ const harborRoutes: Routes = [
       {
         path: 'projects/:id',
         component: ProjectDetailComponent,
-        canActivate: [MemberGuard],
+        canActivate: [MemberGuard], // 用来检查用户是否在此 project 的成员中。只要在此成员中，才可以对其进行操作访问
         resolve: {
-          projectResolver: ProjectRoutingResolver
+          projectResolver: ProjectRoutingResolver // 检查当前用户的成员类型，系统管理员 or 项目管理员 或则其他的身份
         },
         children: [
           {
-            path: 'repositories',
+            path: 'repositories', // 显示此project 下有多少镜像存储库
             component: RepositoryPageComponent
           },
           {
@@ -151,7 +152,7 @@ const harborRoutes: Routes = [
             component: ListChartsComponent
           },
           {
-            path: 'repositories/:repo/tags',
+            path: 'repositories/:repo/tags',  // 对指定的镜像镜像进行一步操作，如扫描，复制摘要等
             component: TagRepositoryComponent,
           },
           {

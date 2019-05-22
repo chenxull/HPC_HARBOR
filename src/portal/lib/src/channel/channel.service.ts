@@ -19,6 +19,7 @@ export class ChannelService {
 
   // Declare for publishing scan event
   scanCommandSource = new Subject<string>();
+  // 专门用来发布镜像扫描消息的通道。
   scanCommand$ = this.scanCommandSource.asObservable();
 
   publishScanEvent(tagId: string): void {

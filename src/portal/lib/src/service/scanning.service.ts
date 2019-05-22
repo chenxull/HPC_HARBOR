@@ -127,7 +127,7 @@ export class ScanningResultDefaultService extends ScanningResultService {
       .then(response => response.json() as VulnerabilityItem[])
       .catch(error => Promise.reject(error));
   }
-
+  // 启动镜像扫描任务，
   startVulnerabilityScanning(
     repoName: string,
     tagId: string
@@ -135,7 +135,6 @@ export class ScanningResultDefaultService extends ScanningResultService {
     if (!repoName || repoName.trim() === "" || !tagId || tagId.trim() === "") {
       return Promise.reject("Bad argument");
     }
-
     return this.http
       .post(
         `${this._baseUrl}/${repoName}/tags/${tagId}/scan`,

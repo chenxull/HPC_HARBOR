@@ -22,7 +22,9 @@ import { Http, URLSearchParams } from '@angular/http';
 
 
 import {HTTP_JSON_OPTIONS, buildHttpRequestOptions, HTTP_GET_OPTIONS} from "../shared/shared.utils";
-
+/*
+* 定义了 project 的相关操作
+* */
 @Injectable()
 export class ProjectService {
 
@@ -84,7 +86,7 @@ export class ProjectService {
                map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
-
+  // 检查此 project 有用户成员
   checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(

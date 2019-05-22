@@ -1,5 +1,8 @@
 <div>
+<!--     使用了 lib 中的指令-->
     <hbr-repository-gridview [projectId]="projectId" [projectName]="projectName" [hasSignedIn]="hasSignedIn"
     [hasProjectAdminRole]="hasProjectAdminRole" [mode]="mode"
     (repoClickEvent)="watchRepoClickEvent($event)"></hbr-repository-gridview>
 </div>
+
+<!-- (repoClickEvent)="watchRepoClickEvent($event) 接受来自子组件发送来的点击事件。repoClickEvent事件触发后，会路由到指定的镜像中去。其他几个[]都是要传入到子组件中的数据-->

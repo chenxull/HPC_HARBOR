@@ -3,10 +3,12 @@
         <div class="row flex-items-xs-between flex-items-xs-top" style="padding-left: 15px; padding-right: 15px;">
             <h2 class="header-title">{{'PROJECT.PROJECTS' | translate}}</h2>
             <div>
+                <!--  系统概要  -->
                 <statistics-panel></statistics-panel>
             </div>
         </div>
         <div class="row flex-items-xs-between rightPos">
+            <!--     右边的内容    -->
             <div class="option-right">
                 <div class="select" style="float: left; left:-6px; top:8px;">
                     <select (change)="doFilterProjects()" [(ngModel)]="selecteType">
@@ -15,13 +17,17 @@
                         <option value="2">{{projectTypes[2] | translate}}</option>
                     </select>
                 </div>
+                <!--  过滤项目         -->
                 <hbr-filter [withDivider]="true" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearchProjects($event)" [currentValue]="projectName"></hbr-filter>
+                <!--  刷新                -->
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
                 </span>
             </div>
         </div>
+<!--       新建项目的表单样式，这个模态框是被动打开的-->
         <create-project (create)="createProject($event)"></create-project>
+<!--        新建项目的实现以及下面的项目数据，当点击新建项目时，会触发打开模态框函数-->
         <list-project (addProject)="openModal()"></list-project>
     </div>
 </div>

@@ -22,6 +22,10 @@ import { SessionService } from '../shared/session.service';
 
 import { Roles } from '../shared/shared.const';
 
+/*
+* 获取当前 project 的 id，同时还有 session 中保存的当前用户信息。
+* 判断当前用户是否为系统管理员或则项目管理员
+* */
 @Injectable()
 export class ProjectRoutingResolver implements Resolve<Project> {
 

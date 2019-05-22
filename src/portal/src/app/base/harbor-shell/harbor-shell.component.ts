@@ -63,6 +63,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService) { }
 
     ngOnInit() {
+        // 订阅搜索事件的发生
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
             if (searchEvt && searchEvt.trim() !== "") {
                 this.isSearchResultsOpened = true;
@@ -74,6 +75,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         });
     }
 
+    // 取消订阅事件
     ngOnDestroy(): void {
         if (this.searchSub) {
             this.searchSub.unsubscribe();
@@ -108,6 +110,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     }
 
     // Open modal dialog
+    // 从别的地方发送过来的事件
     openModal(event: ModalEvent): void {
         switch (event.modalName) {
             case modalEvents.USER_PROFILE:

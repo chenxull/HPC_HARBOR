@@ -22,6 +22,9 @@ import { SessionService } from '../../shared/session.service';
 import { ProjectService } from '../../project/project.service';
 import { CommonRoutes } from '../../shared/shared.const';
 
+/*
+* 不同角色对项目的操作权限不一样，开启的功能也不相同。这相当于访问控制的实现
+* */
 @Injectable()
 export class MemberGuard implements CanActivate, CanActivateChild {
   constructor(
@@ -30,6 +33,7 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+    // 解析project id
     let projectId = route.params['id'];
     this.sessionService.setProjectMembers([]);
     return new Promise((resolve, reject) => {
@@ -46,14 +50,17 @@ export class MemberGuard implements CanActivate, CanActivateChild {
       }
     });
   }
-
+  // 检查当前用户状态
   checkMemberStatus(url: string, projectId: number): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
+      // 检查此 project 有用户成员
       this.projectService.checkProjectMember(projectId)
       .subscribe(res => {
+        // 将获取到的结果存储在 session 的 projectMembers 中
         this.sessionService.setProjectMembers(res);
         return resolve(true);
       },
+      //  此用户不在 project 成员中
       () => {
         // Add exception for repository in project detail router activation.
         this.projectService.getProject(projectId).subscribe(project => {

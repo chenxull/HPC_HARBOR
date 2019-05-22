@@ -41,6 +41,7 @@ export class AppConfigService {
     public load(): Promise<AppConfig> {
         return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(response => {
+                // 将 json 类型的数据转换为 AppConfig 格式
                 this.configurations = response.json() as AppConfig;
 
                 // Read admiral endpoint from cookie if existing 默认情况下为 NA

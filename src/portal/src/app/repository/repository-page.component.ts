@@ -36,6 +36,7 @@ export class RepositoryPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // 获取路由过来的数据
     this.projectId = this.route.snapshot.parent.params['id'];
     let resolverData = this.route.snapshot.parent.data;
     if (resolverData) {

@@ -756,6 +756,8 @@ export class TagComponent implements OnInit, AfterViewInit {
     if (t && t.length) {
       t.forEach((data: any) => {
         let tagId = data.name;
+        // 发布镜像扫描事件
+        console.log("扫描");
         this.channel.publishScanEvent(this.repoName + "/" + tagId);
       });
     }

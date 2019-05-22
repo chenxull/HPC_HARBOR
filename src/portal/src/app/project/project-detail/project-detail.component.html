@@ -5,6 +5,7 @@
 <nav class="subnav sub-nav-bg-color">
     <ul class="nav">
         <li class="nav-item">
+        <!--            具体的镜像位置-->
             <a class="nav-link" routerLink="repositories" routerLinkActive="active">{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</a>
         </li>
         <li *ngIf="withHelmChart" class="nav-item">
@@ -12,6 +13,10 @@
         </li>
         <li class="nav-item" *ngIf="isSystemAdmin || isMember">
             <a class="nav-link" routerLink="members" routerLinkActive="active">{{'PROJECT_DETAIL.USERS' | translate}}</a>
+        </li>
+        <li class="nav-item" *ngIf="isMember" >
+            <!--  需要在路由中添加相应的组件，路由名为 create           -->
+            <a class="nav-link " routerLink="create" routerLinkActive="active">生成镜像</a>
         </li>
         <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
             <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>

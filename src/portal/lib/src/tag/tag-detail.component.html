@@ -41,8 +41,10 @@
             </div>
             <div *ngIf="withClair" class="col-md-4 col-sm-6">
                 <div class="vulnerability">
+                    <!--   有启动镜像扫描的逻辑                 -->
                     <hbr-vulnerability-bar [repoName]="repositoryId" [tagId]="tagDetails.name" [summary]="tagDetails.scan_overview"></hbr-vulnerability-bar>
                 </div>
+                <!-- 漏洞信息概况                 -->
                 <div class="flex-block vulnerabilities-info">
                     <div class="second-column">
                         <div class="row-flex">
@@ -92,6 +94,7 @@
     </ul>
     <section class="detail-section" id="vulnerability" role="tabpanel" aria-labelledby="tag-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
         <div class="vulnerability-block">
+            <!-- 漏洞信息详细视图，          -->
             <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [tagId]="tagId" [withAdminRole]="withAdminRole"></hbr-vulnerabilities-grid>
         </div>
         <div>
