@@ -30,7 +30,9 @@ type Handler struct {
 // Get handles GET request, it checks the http header for user credentials
 // and parse service and scope based on docker registry v2 standard,
 // checkes the permission against local DB and generates jwt token.
+// 检查用户权限，生成 jwt token 数据
 func (h *Handler) Get() {
+	// 获取请求
 	request := h.Ctx.Request
 	log.Debugf("URL for token request: %s", request.URL.String())
 	// service 字段是托管资源的服务名称

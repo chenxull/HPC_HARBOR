@@ -31,6 +31,7 @@ import (
 
 // All query the DB and Registry for all image and tags,
 // then call Harbor's API to scan each of them.
+// 获取数据库中的所有镜像信息，然后调用 Harbor API 来扫描镜像
 type All struct {
 	registryURL          string
 	secret               string
@@ -61,31 +62,37 @@ func (sa *All) Validate(params map[string]interface{}) error {
 func (sa *All) Run(ctx env.JobContext, params map[string]interface{}) error {
 	logger := ctx.GetLogger()
 	logger.Info("Scanning all the images in the registry")
+	// 获取配置信息
 	err := sa.init(ctx)
 	if err != nil {
 		logger.Errorf("Failed to initialize the job handler, error: %v", err)
 		return err
 	}
 
+	// 访问数据库，获取其中的Repositories的信息
 	repos, err := dao.GetRepositories()
 	if err != nil {
 		logger.Errorf("Failed to get the list of repositories, error: %v", err)
 		return err
 	}
 
+	//
 	for _, r := range repos {
 		repoClient, err := utils.NewRepositoryClientForJobservice(r.Name, sa.registryURL, sa.secret, sa.tokenServiceEndpoint)
 		if err != nil {
 			logger.Errorf("Failed to get repo client for repo: %s, error: %v", r.Name, err)
 			continue
 		}
+		//获取所有 tags 信息
 		tags, err := repoClient.ListTag()
 		if err != nil {
 			logger.Errorf("Failed to get tags for repo: %s, error: %v", r.Name, err)
 			continue
 		}
+		//
 		for _, t := range tags {
 			logger.Infof("Calling harbor-core API to scan image, %s:%s", r.Name, t)
+			// 启动扫描任务
 			resp, err := sa.coreClient.Post(fmt.Sprintf("%s/repositories/%s/tags/%s/scan", sa.harborAPIEndpoint, r.Name, t),
 				"application/json",
 				bytes.NewReader([]byte("{}")))
@@ -118,6 +125,7 @@ func (sa *All) init(ctx env.JobContext) error {
 	} else {
 		return fmt.Errorf("failed to read evnironment variable JOBSERVICE_SECRET")
 	}
+	// 访问 core service
 	sa.coreClient, _ = utils.GetClient()
 	if v, err := getAttrFromCtx(ctx, common.TokenServiceURL); err == nil {
 		sa.tokenServiceEndpoint = v

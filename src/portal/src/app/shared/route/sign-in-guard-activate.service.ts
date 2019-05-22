@@ -41,6 +41,7 @@ export class SignInGuard implements CanActivate, CanActivateChild {
             return resolve(false);
           });
       } else {
+        // 如果能成功获取用户信息，路由跳转到项目页面
         let user = this.authService.getCurrentUser();
         if (user === null) {
           this.authService.retrieveUser()

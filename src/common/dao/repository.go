@@ -126,6 +126,7 @@ func GetTotalOfRepositories(query ...*models.RepositoryQuery) (int64, error) {
 }
 
 // GetRepositories ...
+// 查询 存储库的信息
 func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}
 	order := "name asc"
@@ -135,10 +136,12 @@ func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, er
 		}
 	}
 
+	// 构造查询 sql 语句和查询参数
 	condition, params := repositoryQueryConditions(query...)
 	sql := fmt.Sprintf(`select r.repository_id, r.name, r.project_id, r.description, r.pull_count, 
 	r.star_count, r.creation_time, r.update_time %s order by r.%s `, condition, order)
 	if len(query) > 0 && query[0] != nil {
+		// 分页大小
 		page, size := query[0].Page, query[0].Size
 		if size > 0 {
 			sql += `limit ? `
@@ -157,6 +160,7 @@ func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, er
 	return repositories, nil
 }
 
+// 构造查询参数
 func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []interface{}) {
 	params := []interface{}{}
 	sql := `from repository r `

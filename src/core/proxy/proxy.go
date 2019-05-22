@@ -46,7 +46,8 @@ func Init(urls ...string) error {
 }
 
 // Handle handles the request.
-// 开启代理,对请求进行修改
+// 开启代理,对请求进行修改。将请求发送到 registry 去
 func Handle(rw http.ResponseWriter, req *http.Request) {
+	// 目标地址为 registry
 	handlers.head.ServeHTTP(rw, req)
 }
