@@ -21,6 +21,7 @@ import (
 // Context abstracts the operations related with authN and authZ
 type Context interface {
 	// IsAuthenticated returns whether the context has been authenticated or not
+	// 检查当前用户是否被授权
 	IsAuthenticated() bool
 	// GetUsername returns the username of user related to the context
 	GetUsername() string

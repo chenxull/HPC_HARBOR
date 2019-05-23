@@ -130,7 +130,7 @@ func main() {
 	if err := core.Init(); err != nil {
 		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
-
+	// 请求过滤及修改器,对发往后端的请求进行修改
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)

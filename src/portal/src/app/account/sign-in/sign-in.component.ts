@@ -213,7 +213,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // Implement interface
     // Watch the view change only when view is in error state
-    ngAfterViewChecked() {2
+    ngAfterViewChecked() {
         if (this.signInStatus === signInStatusError) {
             this.formChanged();
         }
@@ -245,6 +245,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         this.signInStatus = signInStatusOnGoing;
 
         // Call the service to send out the http request
+        // 因为返回是一个 promise类型的，所有可以用 then 来处理异步的数据
         this.session.signIn(this.signInCredential)
             .then(() => {
                 // Set status

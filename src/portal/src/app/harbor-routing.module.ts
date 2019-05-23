@@ -56,13 +56,14 @@ const harborRoutes: Routes = [
   {
     path: 'harbor',
     component: HarborShellComponent,
-    canActivateChild: [AuthCheckGuard],
+    // 授权检查，就是检查是否能从 session 服务中获取当前用户信息
+    canActivateChild: [AuthCheckGuard], // 必须满足这个条件才能启动 子路由。条件为：获取当前用户信息
     children: [
       { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
       {
         path: 'sign-in',
         component: SignInComponent,
-        canActivate: [SignInGuard]
+        canActivate: [SignInGuard] // 路由守卫，验证此路由能否激活。当成功登录可以获取用户信息时，此路由失效跳转到 projects 中。 在路由中检测到 signout 时，激活组件
       },
       {
         // 登录后显示的第一个页面
@@ -70,13 +71,14 @@ const harborRoutes: Routes = [
         component: ProjectComponent
       },
       {
+        // 查看日志，没有任何路由守卫
         path: 'logs',
         component: LogPageComponent
       },
       {
         path: 'users',
         component: UserComponent,
-        canActivate: [SystemAdminGuard]
+        canActivate: [SystemAdminGuard]  // 判断用户是否为系统管理员,只有系统管理员才能够访问这些组件
       },
       {
         path: 'groups',
@@ -97,7 +99,8 @@ const harborRoutes: Routes = [
       {
         path: 'tags/:id/:repo',
         component: TagRepositoryComponent,
-        canActivate: [MemberGuard],
+        canActivate: [MemberGuard], // 用来检查用户是否在此 project 的成员中。只要在此成员中，才可以对其进行操作访问
+        // resolve 在进入路由之前去服务器读数据，把需要的数据都读好以后，带着这些数据进到路由里，立刻就把数据显示出来。
         resolve: {
           projectResolver: ProjectRoutingResolver
         }
@@ -106,6 +109,7 @@ const harborRoutes: Routes = [
         path: 'projects/:id/repositories/:repo',
         component: TagRepositoryComponent,
         canActivate: [MemberGuard],
+        // 离开时候的路由守卫。提醒用户执行保存操作后才能离开
         canDeactivate: [LeavingRepositoryRouteDeactivate],
         resolve: {
           projectResolver: ProjectRoutingResolver

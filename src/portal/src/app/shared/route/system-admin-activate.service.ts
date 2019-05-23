@@ -23,6 +23,7 @@ import { SessionService } from '../../shared/session.service';
 import { CommonRoutes } from '../../shared/shared.const';
 import { AppConfigService } from '../../app-config.service';
 
+// 判断用户是否为系统管理员，是返回 true
 @Injectable()
 export class SystemAdminGuard implements CanActivate, CanActivateChild {
   constructor(
@@ -38,6 +39,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
           .then(() => {
             // updated user
             user = this.authService.getCurrentUser();
+            // 获取用户信息后，判断用户是否为系统管理员
             if (user.has_admin_role) {
               return resolve(true);
             } else {

@@ -25,6 +25,7 @@ import { AppConfigService } from './app-config.service';
     templateUrl: 'app.component.html'
 })
 export class AppComponent {
+    // 初始化各种服务：翻译，cookie，session，配置服务，title 服务
     constructor(
         private translate: TranslateService,
         private cookie: CookieService,

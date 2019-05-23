@@ -28,10 +28,10 @@ export class SignInGuard implements CanActivate, CanActivateChild {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     // If user has logged in, should not login again
     return new Promise((resolve, reject) => {
-      // If signout appended.判断是否退出登录
+      // 判断路由参数中是否有 signout 参数
       let queryParams = route.queryParams;
       if (queryParams && queryParams['signout']) {
-        this.authService.signOff()
+        this.authService.signOff() // 用户退出
           .then(() => {
             // 清楚 session 缓存
             this.authService.clear(); // Destroy session cache

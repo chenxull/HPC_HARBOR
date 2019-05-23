@@ -50,12 +50,15 @@ const (
 
 // Prepare inits security context and project manager from request
 // context
+// 从请求的 context 中获取 security context 和 project manager
 func (b *BaseController) Prepare() {
+	// 请求何时加上的 harbor_security_context 信息？ 在 main 中的过滤器中实现
 	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
 	if err != nil {
 		log.Errorf("failed to get security context: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
+	// 提取出请求中的 SecurityCtx 赋值给 b
 	b.SecurityCtx = ctx
 
 	pm, err := filter.GetProjectManager(b.Ctx.Request)
@@ -63,6 +66,7 @@ func (b *BaseController) Prepare() {
 		log.Errorf("failed to get project manager: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
+	// 同上面的逻辑
 	b.ProjectMgr = pm
 }
 

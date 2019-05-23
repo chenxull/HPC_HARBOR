@@ -9,7 +9,7 @@
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
-            <!--子路由的信息都在这个插口地方出现-->
+            <!--子路由的信息都在这个插口地方出现：显示项目的详细信息，核心内容显示区域。-->
             <router-outlet></router-outlet>
         </div>
         <!--  侧边导航栏 -->
@@ -65,6 +65,7 @@
         <hbr-operation-model  *ngIf="isUserExisting"></hbr-operation-model>
     </div>
 </clr-main-container>
+<!-- 用户设置，修改密码，确认对话框，关于-->
 <account-settings-modal></account-settings-modal>
 <password-setting></password-setting>
 <confiramtion-dialog></confiramtion-dialog>

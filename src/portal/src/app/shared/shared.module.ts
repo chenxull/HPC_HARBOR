@@ -85,6 +85,7 @@ const uiLibConfig: IServiceConfig = {
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
+    //  HarborLib 共享库
     HarborLibraryModule.forRoot({
       config: { provide: SERVICE_CONFIG, useValue: uiLibConfig },
       errorHandler: { provide: ErrorHandler, useClass: MessageHandlerService }

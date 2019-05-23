@@ -39,9 +39,11 @@ export class UserService {
     }
 
     // Get the user list
+    // 向后端发送请求，这是一个异步请求。then 是对返回数据的处理
     getUsers(): Promise<User[]> {
-        return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(response => response.json() as User[])
+        return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS)
+            .toPromise()
+            .then(response => response.json() as User[]) // 直接将返回的jsob 格式的数据转化为 user 类型
             .catch(error => this.handleError(error));
     }
 
@@ -69,6 +71,7 @@ export class UserService {
     }
 
     // Set user admin role
+    // 设置指定用户角色身份为管理员
     updateUserRole(user: User): Promise<any> {
         return this.http.put(userMgmtEndpoint + "/" + user.user_id + "/sysadmin", JSON.stringify(user), HTTP_JSON_OPTIONS)
             .toPromise()
@@ -77,11 +80,12 @@ export class UserService {
     }
 
     // admin change normal user pwd
+    // 没有携带有自己的账号密码。在访问后端的时候，后端是如何确认其身份的？
     changePassword(uid: number, newPassword: string, confirmPwd: string): Promise<any> {
         if (!uid || !newPassword) {
             return Promise.reject("Invalid change uid or password");
         }
-
+        // 后端 API：/api/users/:id([0-9]+)/password
         return this.http.put(userMgmtEndpoint + '/' + uid + '/password',
             {
                 "old_password": newPassword,
@@ -89,13 +93,13 @@ export class UserService {
             },
             HTTP_JSON_OPTIONS)
             .toPromise()
-            .then(response => response)
+            .then(response => response)  // 返回收到的结果
             .catch(error => {
                 return Promise.reject(error);
             });
     }
-
-    // Get User from LDAP
+    // 可以无视
+    // Get User from LDAP。
     getLDAPUsers(username: string): Promise<User[]> {
         return this.http.get(`${ldapUserEndpoint}/search?username=${username}`, HTTP_GET_OPTIONS)
         .toPromise()

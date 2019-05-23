@@ -47,10 +47,12 @@ export function getCurrentLanguage(translateService: TranslateService) {
 }
 
 @NgModule({
+    // declarations 要在你的模板中使用的东西，主要是components.( view 展示数据的类)
     declarations: [
         AppComponent,
         ProjectConfigComponent,
     ],
+    // 此模块需要依赖的模块
     imports: [
         BrowserModule,
         SharedModule,
@@ -61,6 +63,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
     ],
     exports: [
     ],
+    // 声明服务(~model，用来获取处理数据的类)
     providers: [
       AppConfigService,
       SkinableConfig,
@@ -76,6 +79,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         deps: [ TranslateService ]
       }
     ],
+    // 指定了这个模块启动的时候应该启动的组件.当然这些组件会被自动的加入到entryComponents中去
     bootstrap: [AppComponent]
 })
 export class AppModule {}

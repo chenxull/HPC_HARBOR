@@ -54,23 +54,8 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
 
     this.searchTrigger.closeSearch(true);
     return new Promise((resolve, reject) => {
-      // Before activating, we firstly need to confirm whether the route is coming from peer part - admiral
-      let queryParams = route.queryParams;
-      if (queryParams) {
-        if (queryParams[AdmiralQueryParamKey]) {
-          this.appConfigService.saveAdmiralEndpoint(queryParams[AdmiralQueryParamKey]);
-          // Remove the query parameter key pair and redirect
-          let keyRemovedUrl = maintainUrlQueryParmas(state.url, AdmiralQueryParamKey, undefined);
-          if (!/[?]{1}.+/i.test(keyRemovedUrl)) {
-            keyRemovedUrl = keyRemovedUrl.replace('?', '');
-          }
-
-          this.router.navigateByUrl(keyRemovedUrl);
-          return resolve(false);
-        }
-      }
-
       let user = this.authService.getCurrentUser();
+      // 没有获取到当前用户信息，重新获取
       if (!user) {
         this.authService.retrieveUser()
           .then(() => resolve(true))
@@ -93,6 +78,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
             }
           });
       } else {
+        // resolve 将Promise对象的状态从“未完成”变为“成功”
         return resolve(true);
       }
     });

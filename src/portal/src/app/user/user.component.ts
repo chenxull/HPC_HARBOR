@@ -193,6 +193,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   // Disable the admin role for the specified user
+  // 将指定用户设置为管理员
   changeAdminRole(): void {
     let promiseLists: any[] = [];
     if (this.selectedRow.length) {
@@ -222,7 +223,7 @@ export class UserComponent implements OnInit, OnDestroy {
           promiseLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
-
+        // 将多个 Promise 实例，包装成一个新的 Promise 实例。
         Promise.all(promiseLists).then(() => {
             this.selectedRow = [];
             this.refresh();

@@ -97,10 +97,12 @@ export class ChangePasswordComponent {
         }
 
         this.onGoing = true;
+        // 调用 userService 来更改密码,使用的是异步通信的方式 Promise
         this.userService.changePassword(this.userId, this.password, this.confirmPwd)
             .then(() => {
                 this.onGoing = false;
                 this.opened = false;
+                // 全局消息提示
                 this.msgHandler.showSuccess("USER.RESET_Ok");
 
                 let hnd = setInterval(() => this.ref.markForCheck(), 100);

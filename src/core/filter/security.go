@@ -144,7 +144,7 @@ func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	log.Debug("creating a secret security context...")
 	securCtx := secret.NewSecurityContext(scrt, s.store)
-
+	// 给请求加上 SecurityContext 和 全局的 ProjectMgr
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
 	return true
@@ -222,6 +222,7 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
+	// 将用户授权信息存储在  securCtx 中。在执行后续操作时，检查请求是否授权，就是判断请求中是否含有用户信息
 	securCtx := local.NewSecurityContext(user, pm)
 	// 给发送来的请求 包装上securCtx和 pm。 这些验证可能是组件内部之间通信需要的，目前还是猜测。
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
@@ -330,6 +331,7 @@ func GetSecurityContext(req *http.Request) (security.Context, error) {
 		return nil, fmt.Errorf("request is nil")
 	}
 
+	// 返回 req 中 key 为 harbor_security_context 的 value值，赋值给 ctx
 	ctx := req.Context().Value(SecurCtxKey)
 	if ctx == nil {
 		return nil, fmt.Errorf("the security context got from request is nil")

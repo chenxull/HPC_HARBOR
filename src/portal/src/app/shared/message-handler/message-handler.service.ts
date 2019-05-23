@@ -20,7 +20,7 @@ import { AlertType, httpStatusCode } from '../../shared/shared.const';
 import { errorHandler } from '../../shared/shared.utils';
 import { SessionService } from '../../shared/session.service';
 
-
+// 当执行完某一操作时，全局消息提示
 @Injectable()
 export class MessageHandlerService implements ErrorHandler {
 
@@ -84,6 +84,7 @@ export class MessageHandlerService implements ErrorHandler {
     }
 
     public clear(): void {
+        // 将消息订阅服务清空
         this.msgService.clear();
     }
 

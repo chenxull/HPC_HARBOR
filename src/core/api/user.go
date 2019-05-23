@@ -46,15 +46,17 @@ type passwordReq struct {
 
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
+	// 从请求中获取 security context 和 project manager
 	ua.BaseController.Prepare()
 	mode, err := config.AuthMode()
 	if err != nil {
 		log.Errorf("failed to get auth mode: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
-
+	// 授权模式 db or lDPA
 	ua.AuthMode = mode
 
+	// 自我注册登记？ 不理解这个作用
 	self, err := config.SelfRegistration()
 	if err != nil {
 		log.Errorf("failed to get self registration: %v", err)
@@ -63,6 +65,7 @@ func (ua *UserAPI) Prepare() {
 
 	ua.SelfRegistration = self
 
+	// 检查用户是否授权
 	if !ua.SecurityCtx.IsAuthenticated() {
 		if ua.Ctx.Input.IsPost() {
 			return
@@ -70,7 +73,7 @@ func (ua *UserAPI) Prepare() {
 		ua.HandleUnauthorized()
 		return
 	}
-
+	// 根据用户名从数据库中获取 此用户的详细信息
 	user, err := dao.GetUser(models.User{
 		Username: ua.SecurityCtx.GetUsername(),
 	})
@@ -304,12 +307,14 @@ func (ua *UserAPI) ChangePassword() {
 		return
 	}
 	if changePwdOfOwn {
+		// 验证密码旧密码
 		if user.Password != utils.Encrypt(req.OldPassword, user.Salt) {
 			log.Info("incorrect old_password")
 			ua.RenderError(http.StatusForbidden, "incorrect old_password")
 			return
 		}
 	}
+	// 新旧密码不能一样
 	if user.Password == utils.Encrypt(req.NewPassword, user.Salt) {
 		ua.HandleBadRequest("the new password can not be same with the old one")
 		return
@@ -319,6 +324,7 @@ func (ua *UserAPI) ChangePassword() {
 		UserID:   ua.userID,
 		Password: req.NewPassword,
 	}
+	// 更新数据库中的密码信息
 	if err = dao.ChangeUserPassword(updatedUser); err != nil {
 		ua.HandleInternalServerError(fmt.Sprintf("failed to change password of user %d: %v", ua.userID, err))
 		return
@@ -326,13 +332,16 @@ func (ua *UserAPI) ChangePassword() {
 }
 
 // ToggleUserAdminRole handles PUT api/users/{}/sysadmin
+// 将用户身份设置为 管理员
 func (ua *UserAPI) ToggleUserAdminRole() {
+	// 检查发送请求的用户是否有 管理员权限
 	if !ua.IsAdmin {
 		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
 	}
 	userQuery := models.User{UserID: ua.userID}
+	// 将 json 数据转化为 userQuery 格式
 	ua.DecodeJSONReq(&userQuery)
 	if err := dao.ToggleUserAdminRole(userQuery.UserID, userQuery.HasAdminRole); err != nil {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)

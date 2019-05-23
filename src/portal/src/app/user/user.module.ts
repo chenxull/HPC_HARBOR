@@ -18,6 +18,8 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import {ChangePasswordComponent} from "./change-password/change-password.component";
 
+// user 模块中有修改密码和创建新用户的功能。
+// 用户管理的显示界面
 @NgModule({
   imports: [
     SharedModule
@@ -30,6 +32,7 @@ import {ChangePasswordComponent} from "./change-password/change-password.compone
   exports: [
     UserComponent
   ],
+  // 对整个模块注入 用户服务,基本上对用户的操作都在这个服务中实现
   providers: [UserService]
 })
 export class UserModule {
