@@ -5,7 +5,7 @@
 <nav class="subnav sub-nav-bg-color">
     <ul class="nav">
         <li class="nav-item">
-        <!--            具体的镜像位置-->
+        <!--  镜像仓库-->
             <a class="nav-link" routerLink="repositories" routerLinkActive="active">{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</a>
         </li>
         <li *ngIf="withHelmChart" class="nav-item">
@@ -18,6 +18,7 @@
             <!--  需要在路由中添加相应的组件，路由名为 create           -->
             <a class="nav-link " routerLink="create" routerLinkActive="active">生成镜像</a>
         </li>
+        <!-- 设置此项目与其他镜像仓库进行复制同步     -->
         <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
             <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
         </li>
@@ -32,4 +33,5 @@
         </li>
     </ul>
 </nav>
+<!--路由插座,project 的所有子路由都在这里显示出来-->
 <router-outlet></router-outlet>

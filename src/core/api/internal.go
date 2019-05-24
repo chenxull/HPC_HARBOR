@@ -42,6 +42,7 @@ func (ia *InternalAPI) Prepare() {
 }
 
 // SyncRegistry ...
+// 从 registry 同步所有的 repository 数据到数据库中
 func (ia *InternalAPI) SyncRegistry() {
 	err := SyncRegistry(ia.ProjectMgr)
 	if err != nil {

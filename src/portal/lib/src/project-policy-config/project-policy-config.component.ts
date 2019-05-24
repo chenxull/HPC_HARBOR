@@ -14,6 +14,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Project } from './project';
 import {SystemInfo, SystemInfoService} from '../service/index';
 
+// 定义一个project 策略类
 export class ProjectPolicy {
   Public: boolean;
   ContentTrust: boolean;
@@ -29,6 +30,7 @@ export class ProjectPolicy {
     this.ScanImgOnPush = false;
   }
 
+  // 根据传入的 Project 数据来初始化配置信息
   initByProject(pro: Project) {
     this.Public = pro.metadata.public === 'true' ? true : false;
     this.ContentTrust = pro.metadata.enable_content_trust === 'true' ? true : false;
@@ -45,6 +47,7 @@ export class ProjectPolicy {
 })
 export class ProjectPolicyConfigComponent implements OnInit {
   onGoing = false;
+  // 下面四个 Input 是从父组件传来的数据
   @Input() projectId: number;
   @Input() projectName = 'unknown';
 
@@ -54,21 +57,25 @@ export class ProjectPolicyConfigComponent implements OnInit {
   @ViewChild('cfgConfirmationDialog') confirmationDlg: ConfirmationDialogComponent;
 
   systemInfo: SystemInfo;
+  // 数据通过表单的方式 与前端页面进行数据交换
+  // orgProjectPolicy 是旧的配置数据
   orgProjectPolicy = new ProjectPolicy();
+  // projectPolicy 是新的配置数据
   projectPolicy = new ProjectPolicy();
 
+  // 定义的危险级别
   severityOptions = [
     {severity: 'high', severityLevel: 'VULNERABILITY.SEVERITY.HIGH'},
     {severity: 'medium', severityLevel: 'VULNERABILITY.SEVERITY.MEDIUM'},
     {severity: 'low', severityLevel: 'VULNERABILITY.SEVERITY.LOW'},
     {severity: 'negligible', severityLevel: 'VULNERABILITY.SEVERITY.NEGLIGIBLE'},
   ];
-
+  // 初始化四种服务
   constructor(
     private errorHandler: ErrorHandler,
     private translate: TranslateService,
     private projectService: ProjectService,
-    private systemInfoService: SystemInfoService,
+    private systemInfoService: SystemInfoService, // 从后端服务器获取系统配置信息
   ) {}
 
   ngOnInit(): void {
@@ -78,12 +85,13 @@ export class ProjectPolicyConfigComponent implements OnInit {
       return;
     }
 
-    // get system info
+    // get system info。使用异步通信的方式。收到信息之后，存放在 systemInfo 中
     toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
     .then(systemInfo => this.systemInfo = systemInfo)
     .catch(error => this.errorHandler.error(error));
 
     // retrive project level policy data
+    // 获取此 project 的
     this.retrieve();
   }
 
@@ -99,6 +107,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     toPromise<Project>(this.projectService.getProject(this.projectId))
     .then(
       response => {
+        // 根据从后端服务器获取的最新数据来 初始化配置信息
         this.orgProjectPolicy.initByProject(response);
         this.projectPolicy.initByProject(response);
       })
@@ -130,13 +139,15 @@ export class ProjectPolicyConfigComponent implements OnInit {
       return;
     }
     this.onGoing = true;
+    // 异步的方式，后端 API：/api/projects/:id([0-9]+）
     toPromise<any>(this.projectService.updateProjectPolicy(this.projectId, this.projectPolicy))
     .then(() => {
       this.onGoing = false;
-
+      // 需要翻译，对照 json 文件来
       this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
         this.errorHandler.info(res);
       });
+      // 更新页面，所有会有一个 get 请求
       this.refresh();
     })
     .catch(error => {

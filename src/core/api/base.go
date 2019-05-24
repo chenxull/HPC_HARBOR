@@ -66,7 +66,7 @@ func (b *BaseController) Prepare() {
 		log.Errorf("failed to get project manager: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
-	// 同上面的逻辑
+	// 同上面的逻辑，获取 project 信息
 	b.ProjectMgr = pm
 }
 

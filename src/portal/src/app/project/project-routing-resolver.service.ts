@@ -36,12 +36,13 @@ export class ProjectRoutingResolver implements Resolve<Project> {
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<Project> {
     // Support both parameters and query parameters
+    // 获取路由中的 id
     let projectId = route.params['id'];
     if (!projectId) {
       projectId = route.queryParams['project_id'];
     }
     return this.projectService
-      .getProject(projectId)
+      .getProject(projectId) // getProject 返回的是 observable，使用 toPromise 来接受数据
       .toPromise()
       .then((project: Project) => {
         if (project) {

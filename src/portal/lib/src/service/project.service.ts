@@ -85,7 +85,7 @@ export class ProjectDefaultService extends ProjectService {
   ) {
     super();
   }
-
+  // 获取 project 信息
   public getProject(
     projectId: number | string
   ): Observable<Project> | Promise<Project> | Project {

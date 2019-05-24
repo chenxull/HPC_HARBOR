@@ -55,6 +55,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService) { }
 
     ngOnInit() {
+        // 订阅 searchTriggerChan$ 主题中的事件，当有事件发出时，启动搜索
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(term => {
             this.doSearch(term);
         });

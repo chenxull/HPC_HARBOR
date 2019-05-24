@@ -39,8 +39,10 @@ export class ProjectConfigComponent implements OnInit {
     this.projectId = +this.route.snapshot.parent.params['id'];
     this.currentUser = this.session.getCurrentUser();
     this.hasSignedIn = this.session.getCurrentUser() !== null;
+    // ActivatedRoute 用来监控路由中的数据
     let resolverData = this.route.snapshot.parent.data;
     if (resolverData) {
+      // 获取 resolve 中获取的 project 信息 projectResolver
       let pro: Project = <Project>resolverData['projectResolver'];
       this.hasProjectAdminRole = pro.has_project_admin_role;
       this.projectName = pro.name;

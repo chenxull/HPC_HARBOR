@@ -36,7 +36,7 @@ export class ProjectService {
                map(response => response.json()),
                catchError(error => observableThrowError(error)), );
   }
-
+  // 展示所有的项目
   listProjects(name: string, isPublic?: number, page?: number, pageSize?: number): Observable<any> {
     let params = new URLSearchParams();
     if (page && pageSize) {
@@ -49,12 +49,13 @@ export class ProjectService {
     if (isPublic !== undefined) {
       params.set('public', '' + isPublic);
     }
+    // Get
     return this.http
                .get(`/api/projects`, buildHttpRequestOptions(params)).pipe(
                map(response => response),
                catchError(error => observableThrowError(error)), );
   }
-
+  // Post创建新项目
   createProject(name: string, metadata: any): Observable<any> {
     return this.http
                .post(`/api/projects`,
@@ -65,28 +66,28 @@ export class ProjectService {
                map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
-
+  // PUT
   toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
     return this.http
                .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, HTTP_JSON_OPTIONS).pipe(
                map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
-
+  // Delete
   deleteProject(projectId: number): Promise<any> {
     return this.http
                .delete(`/api/projects/${projectId}`).toPromise()
                .then(response => response.status)
                .catch(error => Promise.reject(error));
   }
-
+  // Head
   checkProjectExists(projectName: string): Observable<any> {
     return this.http
                .head(`/api/projects/?project_name=${projectName}`).pipe(
                map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
-  // 检查此 project 有用户成员
+  // Get检查此 project 有用户成员
   checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(

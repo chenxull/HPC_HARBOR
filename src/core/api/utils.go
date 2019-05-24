@@ -40,6 +40,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
+	// 获取 registry 中的概要信息
 	reposInRegistry, err := catalog()
 	if err != nil {
 		log.Error(err)
@@ -47,6 +48,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	}
 
 	var repoRecordsInDB []*models.RepoRecord
+	// 获取数据库中已经存在的 repository
 	repoRecordsInDB, err = dao.GetRepositories()
 	if err != nil {
 		log.Errorf("error occurred while getting all registories. %v", err)
@@ -60,6 +62,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 
 	var reposToAdd []string
 	var reposToDel []string
+	// 对于数据库中原有的 repository 数据，以及刚刚从 registry 中获取的 repository 数据。
 	reposToAdd, reposToDel, err = diffRepos(reposInRegistry, reposInDB, pm)
 	if err != nil {
 		return err
@@ -68,11 +71,14 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	if len(reposToAdd) > 0 {
 		log.Debugf("Start adding repositories into DB... ")
 		for _, repoToAdd := range reposToAdd {
+			// 将一个 repository 分成二部分：project 和镜像名称。
 			project, _ := utils.ParseRepository(repoToAdd)
+			// 从 access_log 中获取此镜像被拉取多少次的信息
 			pullCount, err := dao.CountPull(repoToAdd)
 			if err != nil {
 				log.Errorf("Error happens when counting pull count from access log: %v", err)
 			}
+			// 获取 project 的详细数据
 			pro, err := pm.Get(project)
 			if err != nil {
 				log.Errorf("failed to get project %s: %v", project, err)
@@ -84,6 +90,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 				PullCount: pullCount,
 			}
 
+			// 将数据写入到 repository 数据中
 			if err := dao.AddRepository(repoRecord); err != nil {
 				log.Errorf("Error happens when adding the missing repository: %v", err)
 			} else {
@@ -114,7 +121,7 @@ func catalog() ([]string, error) {
 	if err != nil {
 		return repositories, err
 	}
-
+	// 获取 registry 的概要信息
 	repositories, err = rc.Catalog()
 	if err != nil {
 		return repositories, err
@@ -136,9 +143,11 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 	for i < len(reposInRegistry) && j < len(reposInDB) {
 		repoInR = reposInRegistry[i]
 		repoInD = reposInDB[j]
+		// 先排序，然后直接调用 strings 中的比较函数来判断数据是否相同
 		d := strings.Compare(repoInR, repoInD)
 		if d < 0 {
 			i++
+			// 检查 project 中是否存在 此 repository 数据
 			exist, err := projectExists(pm, repoInR)
 			if err != nil {
 				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
@@ -155,7 +164,9 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 				return needsAdd, needsDel, err
 			}
 
+			// 检查此 tag 的 repos 是否存在，存在返回 true
 			exist, err = repositoryExist(repoInR, client)
+			//检查项目是否存在，检查 repository 是否真的在 registry 存在
 			if err != nil {
 				return needsAdd, needsDel, err
 			}
@@ -271,6 +282,7 @@ func buildReplicationActionURL() string {
 }
 
 func repositoryExist(name string, client *registry.Repository) (bool, error) {
+	// 获取此 repository 的 tag 数据
 	tags, err := client.ListTag()
 	if err != nil {
 		if regErr, ok := err.(*registry_error.HTTPError); ok && regErr.StatusCode == http.StatusNotFound {

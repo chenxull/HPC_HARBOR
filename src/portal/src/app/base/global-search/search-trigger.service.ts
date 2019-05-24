@@ -27,6 +27,7 @@ export class SearchTriggerService {
 
   // 触发搜索结果
   triggerSearch(event: string) {
+    // 发布事件
     this.searchTriggerSource.next(event);
   }
 

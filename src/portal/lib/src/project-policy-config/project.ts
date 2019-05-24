@@ -1,3 +1,4 @@
+// 这里也将 project 类重新定义了一遍
 export class Project {
     project_id: number;
     owner_id?: number;

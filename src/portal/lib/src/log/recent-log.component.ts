@@ -109,6 +109,7 @@ export class RecentLogComponent implements OnInit {
         this.doFilter(this.currentTerm);
     }
 
+    // 向服务的获取所有的日志信息
     load(state: State) {
         // Keep it for future filter
         this.currentState = state;

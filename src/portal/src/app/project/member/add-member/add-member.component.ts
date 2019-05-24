@@ -71,6 +71,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   inlineAlert: InlineAlertComponent;
 
   @Input() projectId: number;
+  // 将添加的成员信息发送给父组件
   @Output() added = new EventEmitter<boolean>();
 
   isMemberNameValid: boolean = true;
@@ -88,26 +89,32 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     private ref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    // 获取父路由中的数据
     let resolverData = this.route.snapshot.parent.data;
     let hasProjectAdminRole: boolean;
     if (resolverData) {
       hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
+    // 只有系统管理员才能执行接下来的操作
     if (hasProjectAdminRole) {
+      // 获取用户列表,用户自动补全功能。
       this.userService.getUsers()
         .then(users => {
           this.userLists = users;
         });
 
+      // 当用户在数据名字时，会定期检查名字的变化
       this.nameChecker.pipe(
         debounceTime(500),
         distinctUntilChanged(), )
         .subscribe((name: string) => {
+          // 从表单中获取当前用户输入的数据
           let cont = this.currentForm.controls['member_name'];
           if (cont) {
             this.isMemberNameValid = cont.valid;
             if (cont.valid) {
               this.checkOnGoing = true;
+              // 发送 GET 请求，验证当前用户是否已经存在
               this.memberService
                 .listMembers(this.projectId, cont.value).toPromise()
                 .then((members: Member[]) => {
@@ -147,6 +154,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     this.nameChecker.unsubscribe();
   }
 
+  // 提交表单数据
   onSubmit(): void {
     if (!this.member.entity_name || this.member.entity_name.length === 0) { return; }
     this.memberService
@@ -162,6 +170,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
       .subscribe(
       () => {
         this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
+        //  将事件发送回父组件
         this.added.emit(true);
         // this.addMemberOpened = false;
       },

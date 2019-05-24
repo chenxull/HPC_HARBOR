@@ -32,6 +32,7 @@ export class AuditLogService {
 
   constructor(private http: Http) {}
 
+  // 显示出项目中的日志
   listAuditLogs(queryParam: AuditLog): Observable<any> {
     let params: URLSearchParams = new URLSearchParams(queryParam.keywords);
     if (queryParam.begin_timestamp) {
@@ -55,6 +56,7 @@ export class AuditLogService {
       catchError(error => observableThrowError(error)), );
   }
 
+  // 显示所有的日志信息
   getRecentLogs(lines: number): Observable<AuditLog[]> {
     let params: RequestQueryParams = new RequestQueryParams();
     params.set('page_size', '' + lines);

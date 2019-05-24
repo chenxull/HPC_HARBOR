@@ -32,15 +32,23 @@ func initRouters() {
 	// standalone
 	if !config.WithAdmiral() {
 		// Controller API:
+		// 登录
 		beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
+		// 登出
 		beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
+		// 重置密码
 		beego.Router("/c/reset", &controllers.CommonController{}, "post:ResetPassword")
+		// 检查用户是否存储，在注册用户的时候使用
 		beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
+		// 用来发送邮件的 api
 		beego.Router("/c/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 
 		// API:
+		// 给具体某个项目增加成员，对于项目的控制很有用。
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
+		// Head 检查 project 是否存在，用在创建 project 时候
 		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
+		//  用来修改更新单个project 配置的 API
 		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
 
 		beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
@@ -59,6 +67,7 @@ func initRouters() {
 	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
+	// 用来获取具体项目的日志信息
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
@@ -96,6 +105,7 @@ func initRouters() {
 	beego.Router("/api/targets/:id([0-9]+)", &api.TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
+	// 获取所有的日志信息。
 	beego.Router("/api/logs", &api.LogAPI{})
 	beego.Router("/api/configs", &api.ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/configurations", &api.ConfigAPI{})

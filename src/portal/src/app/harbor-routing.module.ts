@@ -140,11 +140,12 @@ const harborRoutes: Routes = [
         },
       },
       {
+        // project 详情
         path: 'projects/:id',
         component: ProjectDetailComponent,
         canActivate: [MemberGuard], // 用来检查用户是否在此 project 的成员中。只要在此成员中，才可以对其进行操作访问
         resolve: {
-          projectResolver: ProjectRoutingResolver // 检查当前用户的成员类型，系统管理员 or 项目管理员 或则其他的身份
+          projectResolver: ProjectRoutingResolver // 获取当前 project 数据，提供给子路由使用
         },
         children: [
           {
@@ -176,7 +177,7 @@ const harborRoutes: Routes = [
             component: ProjectLabelComponent
           },
           {
-            path: 'configs',
+            path: 'configs', // 项目中的配置管理
             component: ProjectConfigComponent
           }
         ]

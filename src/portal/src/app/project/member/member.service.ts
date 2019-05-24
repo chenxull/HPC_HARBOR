@@ -31,6 +31,7 @@ export class MemberService {
 
   constructor(private http: Http) {}
 
+  // GET 显示当前项目的成员数
   listMembers(projectId: number, entity_name: string): Observable<Member[]> {
     return this.http
                .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
@@ -38,6 +39,7 @@ export class MemberService {
                catchError(error => observableThrowError(error)), );
   }
 
+  // POST 给 project 增加成员
   addUserMember(projectId: number, user: User, roleId: number): Observable<any> {
     let member_user = {};
     if (user.user_id) {
@@ -58,6 +60,7 @@ export class MemberService {
       catchError(error => observableThrowError(error)), );
   }
 
+  // LADP 增加组成员
   addGroupMember(projectId: number, group: any, roleId: number): Observable<any> {
     return this.http
                .post(`/api/projects/${projectId}/members`,
@@ -67,6 +70,7 @@ export class MemberService {
                catchError(error => observableThrowError(error)), );
   }
 
+  // 改变成员身份
   changeMemberRole(projectId: number, userId: number, roleId: number): Promise<any> {
     return this.http
                .put(`/api/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS).toPromise()
@@ -74,6 +78,7 @@ export class MemberService {
                .catch(error => Promise.reject(error));
   }
 
+  // 删除成员
   deleteMember(projectId: number, memberId: number): Promise<any> {
     return this.http
                .delete(`/api/projects/${projectId}/members/${memberId}`).toPromise()

@@ -1,8 +1,10 @@
+<!-- 表单-->
 <form #projectPolicyForm="ngForm">
     <section class="form-block">
         <div class="form-group">
           <label for="projectPolicyForm">{{ 'PROJECT_CONFIG.REGISTRY' | translate }}</label>
-          <div class="form-content">
+            <!--  项目仓库         -->
+            <div class="form-content">
             <clr-checkbox [(ngModel)]="projectPolicy.Public" name="public"
               [clrDisabled]="!hasProjectAdminRole">{{ 'PROJECT_CONFIG.PUBLIC_TOGGLE' | translate }}</clr-checkbox>
             <div>
@@ -19,11 +21,13 @@
               <div class="chk-explain"><label> {{ 'PROJECT_CONFIG.CONTENT_TRUST_POLCIY' | translate }} </label></div>
             </div>
             <div *ngIf="withClair">
+                <!-- 阻止潜在漏洞                      -->
               <clr-checkbox [(ngModel)]="projectPolicy.PreventVulImg" name="prevent-vulenrability-image" [clrDisabled]="!hasProjectAdminRole">{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_TOGGLE' | translate }}</clr-checkbox>
               <div class="chk-explain">
                 <label>
                   <div id="severity-blk">
                     <div>{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_1' | translate }}</div>
+                    <!-- 选择危害级别      -->
                     <div class="select">
                       <select id="severity" name="severity" [(ngModel)]="projectPolicy.PreventVulImgSeverity" [disabled]="!projectPolicy.PreventVulImg">
                         <option *ngFor='let s of severityOptions' [ngValue]="s.severity">{{ s.severityLevel | translate }}</option>                      
@@ -38,6 +42,7 @@
         </div>
         <div class="form-group" *ngIf="withClair">
           <label for="projectPolicyForm">{{ 'PROJECT_CONFIG.SCAN' | translate }}</label>
+            <!-- 自动镜像扫描            -->
           <div class="form-content">
             <clr-checkbox [(ngModel)]="projectPolicy.ScanImgOnPush" name="scan-image-on-push" [clrDisabled]="!hasProjectAdminRole">{{ 'PROJECT_CONFIG.AUTOSCAN_TOGGLE' | translate }}</clr-checkbox>
             <div class="chk-explain"><label> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}</label></div>

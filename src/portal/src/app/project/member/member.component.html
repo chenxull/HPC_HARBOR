@@ -4,6 +4,7 @@
             <div class="flex-xs-middle option-left" style="position: relative; top: 10px;">
             </div>
             <div class="flex-xs-middle option-right">
+                <!-- 过滤成员                -->
                 <hbr-filter [withDivider]="true" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearch($event)" [currentValue]="searchMember"></hbr-filter>
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
@@ -13,12 +14,14 @@
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-dg-action-bar>
+            <!-- 增加用户模态框            -->
             <button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.USER' | translate }}</span>
             </button>
             <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasProjectAdminRole || !isLdapMode">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.LDAP_GROUP' | translate}}</span>
             </button>
+<!--             其他操作-->
             <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
                 <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret down"></clr-icon></span>
                 <clr-dropdown-menu *clrIfOpen>

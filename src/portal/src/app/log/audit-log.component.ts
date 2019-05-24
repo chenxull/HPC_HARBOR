@@ -23,8 +23,12 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 
 import { State } from '@clr/angular';
 
+// 项目页面的日志
+
+// 高级检索和普通检索
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 
+// 检索条件
 class FilterOption {
   key: string;
   description: string;
@@ -41,6 +45,7 @@ class FilterOption {
   }
 }
 
+// 高级检索中的时间段数据
 export class SearchOption {
   startTime: string = "";
   endTime: string = "";
@@ -89,17 +94,20 @@ export class AuditLogComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // 获取项目 id，页大小
     this.projectId = +this.route.snapshot.parent.params['id'];
     this.queryParam.project_id = this.projectId;
     this.queryParam.page_size = this.pageSize;
 
   }
 
+  // 搜索的真正逻辑
   retrieve(state?: State): void {
     if (state) {
       this.queryParam.page = Math.ceil((state.page.to + 1) / this.pageSize);
       this.currentPage = this.queryParam.page;
     }
+    // 根据发去的请求参数，来显示出符合条件的日志信息
     this.auditLogService
       .listAuditLogs(this.queryParam)
       .subscribe(
@@ -128,7 +136,7 @@ doSearchByStartTime(fromTimestamp: string): void {
     this.queryParam.end_timestamp = toTimestamp;
     this.retrieve();
   }
-
+  // 在项目日志搜索中可以无视，只支持按照用户名进行搜索
   doSearchByOptions() {
     let selectAll = true;
     let operationFilter: string[] = [];
