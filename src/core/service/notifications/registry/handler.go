@@ -34,6 +34,7 @@ import (
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
+// 用来接收来自内部 registry 事件。比如说当用户上传镜像后，registry 会通知 core，根据相关配置判断是否进行镜像扫描任务
 type NotificationHandler struct {
 	api.BaseController
 }

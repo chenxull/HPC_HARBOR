@@ -73,6 +73,7 @@ func (rps *RedisPeriodicScheduler) Start() {
 	}()
 
 	// Load existing periodic job policies
+	// 载入现有的周期性任务数据
 	if err := rps.Load(); err != nil {
 		// exit now
 		rps.context.ErrorChan <- err

@@ -61,6 +61,7 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	)
 
 	defer func() {
+		// 镜像扫描任务完成后，会执行此语句
 		if err == nil {
 			logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
 			return // nothing need to do
@@ -187,6 +188,7 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 	// 在这里的 buildContext 构造了三个用来处理 job 的匿名函数,并存储到JobDate 的 ExtraData 中
 	checkOPCmdFuncFactory := func(jobID string) job.CheckOPCmdFunc {
 		return func() (string, bool) {
+			// 从 jobStatsManager 中获取
 			cmd, err := rj.statsManager.CtlCommand(jobID)
 			if err != nil {
 				return "", false
@@ -205,9 +207,12 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 
 	jData.ExtraData["checkInFunc"] = checkInFuncFactory(j.ID)
 
+	// 这个是重点，从 core 发送来的 job 都会有此种函数
 	launchJobFuncFactory := func(jobID string) job.LaunchJobFunc {
+		// key为 “controller_launch_job_func”，返回值是接口类型的
 		funcIntf := rj.context.SystemContext.Value(utils.CtlKeyOfLaunchJobFunc)
 		return func(jobReq models.JobRequest) (models.JobStats, error) {
+			// 提取出 context 中保存的 launchjobFunc
 			launchJobFunc, ok := funcIntf.(job.LaunchJobFunc)
 			if !ok {
 				return models.JobStats{}, errors.New("no launch job func provided")
@@ -217,10 +222,12 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 			if jobReq.Job != nil {
 				jobName = jobReq.Job.Name
 			}
+			// job以存在
 			if j.Name == jobName {
 				return models.JobStats{}, errors.New("infinite job creating loop may exist")
 			}
 
+			// 将从 core 发来的请求信息放入到 启动函数中处理
 			res, err := launchJobFunc(jobReq)
 			if err != nil {
 				return models.JobStats{}, err
@@ -249,6 +256,7 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 		rj.context.JobContext = impl.NewDefaultContext(rj.context.SystemContext)
 	}
 
+	// 将刚刚生成的 3 个匿名函数赋值到 jobcontext 中
 	return rj.context.JobContext.Build(jData)
 }
 

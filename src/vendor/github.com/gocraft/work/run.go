@@ -27,6 +27,7 @@ func runJob(job *Job, ctxType reflect.Type, middleware []*middlewareHandler, jt 
 			}
 			return x.(error)
 		}
+		// 单个镜像扫描任务就是 generic 类型的，直接返回其处理函数
 		if jt.IsGeneric {
 			return jt.GenericHandler(job)
 		}

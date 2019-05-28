@@ -85,14 +85,14 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 			req.Job.Parameters,
 			req.Job.Metadata.Cron)
 	default:
-		// 默认工作类型为 Generic，对应到前端为
+		// 默认工作类型为 Generic，镜像扫描任务就是属于此种类型
 		res, err = c.backendPool.Enqueue(req.Job.Name, req.Job.Parameters, req.Job.Metadata.IsUnique)
 	}
 
 	// Register status hook?
 	if err == nil {
 		if !utils.IsEmptyStr(req.Job.StatusHook) {
-			// 在 redis 中注册 jobid+status hook
+			// 在 redis 中注册 jobid+status hook。这个 hook 是用来将数据发送给 core 组件的，jobID 正好在数据库 img_scan_job表中
 			if err := c.backendPool.RegisterHook(res.Stats.JobID, req.Job.StatusHook); err != nil {
 				res.Stats.HookStatus = hookDeactivated
 			} else {

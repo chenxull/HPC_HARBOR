@@ -66,6 +66,7 @@ func initRouters() {
 	// API
 	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
+	// 获取 ProjectAPI 中定义了对 project 的各种操作。
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	// 用来获取具体项目的日志信息
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
@@ -73,6 +74,9 @@ func initRouters() {
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &api.MetadataAPI{}, "put:Put;delete:Delete")
+
+	// 所有对 repository 的操作都是通过RepositoryAPI来进行的。
+	// todo 这些 api 都需要弄懂
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
@@ -82,8 +86,11 @@ func initRouters() {
 	beego.Router("/api/repositories/*/tags/:tag/labels", &api.RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
 	beego.Router("/api/repositories/*/tags/:tag/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromImage")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags;post:Retag")
+	// 启动镜像扫描任务，后面的 ScanImage 才是正在执行的函数，POST 是请求的类型
 	beego.Router("/api/repositories/*/tags/:tag/scan", &api.RepositoryAPI{}, "post:ScanImage")
+	// 从 clair 中获取镜像的漏洞信息
 	beego.Router("/api/repositories/*/tags/:tag/vulnerability/details", &api.RepositoryAPI{}, "Get:VulnerabilityDetails")
+	// 获取镜像的 manifest 数据
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
@@ -120,16 +127,21 @@ func initRouters() {
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
 
+	// 将 registry 中的 repository 数据同步到数据库中
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
+	// 重新命名
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig")
 
 	// external service that hosted on harbor process:
 	// /service/notifications 用于镜像上传时的通知服务
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
+	// 启动镜像扫描任务
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
+	// jobservice 中的 hook_url 进行访问，用来更新数据库中 job 的状态信息
 	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplication")
+	// 用来更新数据库中 job service 的工作状态 ，主要涉及到 admin job 表
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	// 获取 token 信息
 	beego.Router("/service/token", &token.Handler{})

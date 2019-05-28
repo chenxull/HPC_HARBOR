@@ -23,6 +23,7 @@ const ScanJobTable = "img_scan_job"
 const ScanOverviewTable = "img_scan_overview"
 
 // ScanJob is the model to represent a job for image scan in DB.
+// 数据库中 img_scan_job 表
 type ScanJob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Status       string    `orm:"column(status)" json:"status"`

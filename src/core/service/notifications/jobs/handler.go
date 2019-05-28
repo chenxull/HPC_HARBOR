@@ -43,6 +43,7 @@ type Handler struct {
 }
 
 // Prepare ...
+// 主要用来获取 job id 以及更改 任务状态
 func (h *Handler) Prepare() {
 	// 获取任务 id
 	id, err := h.GetInt64FromPath(":id")
@@ -67,7 +68,7 @@ func (h *Handler) Prepare() {
 		h.Abort("200")
 		return
 	}
-	// 上述操作的主要目的是获取状态值
+	// 上述操作的主要目的是获取状态值，将其从 pending 状态更新为 running
 	h.status = status
 }
 

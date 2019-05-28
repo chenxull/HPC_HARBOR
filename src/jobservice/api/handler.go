@@ -69,6 +69,7 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 }
 
 // HandleLaunchJobReq is implementation of method defined in interface 'Handler'
+// 处理发送来的镜像扫描 job
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
 	// 检测是否获取到 control
 	if !dh.preCheck(w, req) {
@@ -82,6 +83,7 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	}
 
 	// unmarshal data
+	// 因为送发来的就是 jobData类型的数据
 	jobReq := models.JobRequest{}
 	if err = json.Unmarshal(data, &jobReq); err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
@@ -90,6 +92,8 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 
 	// Pass request to the controller for the follow-up.
 	// 将 request 交给 controller 进行控制，根据 job 类型放入不同的任务队列，检测是否带有 hook
+	// 这个设计也太简明了吧，直接把任务交给控制器，完全不用管背后的实现细节。这个控制器就是后端的工作池。
+	//
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
 		if errs.IsConflictError(err) {

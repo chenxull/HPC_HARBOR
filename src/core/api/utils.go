@@ -147,7 +147,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 		d := strings.Compare(repoInR, repoInD)
 		if d < 0 {
 			i++
-			// 检查 project 中是否存在 此 repository 数据
+			// 检查 数据库中是否存在此project
 			exist, err := projectExists(pm, repoInR)
 			if err != nil {
 				log.Errorf("failed to check the existence of project %s: %v", repoInR, err)
@@ -164,7 +164,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 				return needsAdd, needsDel, err
 			}
 
-			// 检查此 tag 的 repos 是否存在，存在返回 true
+			// 检查此 tag 的 镜像 是否存在与 registry 中，存在返回 true
 			exist, err = repositoryExist(repoInR, client)
 			//检查项目是否存在，检查 repository 是否真的在 registry 存在
 			if err != nil {

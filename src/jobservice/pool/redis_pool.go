@@ -78,10 +78,14 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 	pool := work.NewWorkerPool(RedisPoolContext{}, workerCount, namespace, redisPool)
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	client := work.NewClient(namespace, redisPool)
+	// jobStats 信息管理器
 	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, namespace, redisPool)
+	// 周期性任务调度器
 	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool, statsMgr)
 	sweeper := period.NewSweeper(namespace, redisPool, client)
+	// 消息服务器
 	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
+	// 复制器
 	deDepulicator := NewRedisDeDuplicator(namespace, redisPool)
 	return &GoCraftWorkPool{
 		namespace:     namespace,
@@ -129,7 +133,7 @@ func (gcwp *GoCraftWorkPool) Start() error {
 			}
 		}()
 
-		// Register callbacks。订阅各种消息格式
+		// Register callbacks。注册事件对应回调处理函数
 		if err = gcwp.messageServer.Subscribe(period.EventSchedulePeriodicPolicy,
 			func(data interface{}) error {
 				// 在内存中存储周期性的任务数据,数据的类型必须为 PeriodicJobPolicy
@@ -146,7 +150,7 @@ func (gcwp *GoCraftWorkPool) Start() error {
 		}
 		if err = gcwp.messageServer.Subscribe(opm.EventRegisterStatusHook,
 			func(data interface{}) error {
-				//  在内存中存储 hook url
+				//  在内存中存储 hook_url。这里定义了如何处理 hook_url
 				return gcwp.handleRegisterStatusHook(data)
 			}); err != nil {
 			return
@@ -187,11 +191,12 @@ func (gcwp *GoCraftWorkPool) Start() error {
 		gcwp.statsManager.Start()
 
 		// blocking call。任务调度是阻塞的，调度器是专门针对于周期性任务来设计的。
-		//启动任务队列接受任务。
+		//启动任务队列接受任务。实现比较复杂
 		gcwp.scheduler.Start()
 	}()
 
 	gcwp.context.WG.Add(1)
+
 	go func() {
 		defer func() {
 			gcwp.context.WG.Done()
@@ -205,8 +210,9 @@ func (gcwp *GoCraftWorkPool) Start() error {
 		}
 
 		// Append middlewares。增加 workpool 的中间件，用来携带日志功能
+		// 当接受到任务时，会在日志中记录
 		gcwp.pool.Middleware((*RedisPoolContext).logJob)
-		//启动 worker pool
+		//启动 worker pool，不停的监听 redis 中的任务
 		gcwp.pool.Start()
 		logger.Infof("Redis worker pool is started")
 
@@ -225,7 +231,6 @@ func (gcwp *GoCraftWorkPool) Start() error {
 // RegisterJob is used to register the job to the pool.
 // j is the type of job
 // 在 RegisterJob 时 就已经开始执行 job 了
-
 func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	if utils.IsEmptyStr(name) || j == nil {
 		return errors.New("job can not be registered with empty name or nil interface")
@@ -245,6 +250,7 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	// 注册过的 job 就需要被执行
 	for jName, jInList := range gcwp.knownJobs {
 		// 判断 job 的类型，在调用不同的 接口实现
+		// j 是结构体指针，通过反射之后获得的是此 job 结构体的实现
 		jobImpl := reflect.TypeOf(j).String()
 		// 判断已有的 job 类型和传入的 job 实现的类型是否相同
 		if reflect.TypeOf(jInList).String() == jobImpl {
@@ -258,6 +264,8 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	// Get more info from j
 	theJ := Wrap(j)
 
+	// 给每种类型的 job 创建执行函数。提前在 redis 中注册好。当redis 中有新 job 时，只需调用对应处理函数即可
+	// 将其存储到 work pool 中
 	gcwp.pool.JobWithOptions(name,
 		work.JobOptions{MaxFails: theJ.MaxFails()},
 		func(job *work.Job) error {
@@ -288,6 +296,7 @@ func (gcwp *GoCraftWorkPool) RegisterJobs(jobs map[string]interface{}) error {
 }
 
 // Enqueue job
+//
 func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, isUnique bool) (models.JobStats, error) {
 	var (
 		j   *work.Job
@@ -308,7 +317,8 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 			return models.JobStats{}, err
 		}
 	} else {
-		// Enqueue job.将 job 入工作队列
+		// Enqueue job.将 job 入工作队列。返回的是一个 job 类型。
+		// 目前猜测，harbor 中的 jobservice 可能是从工作框架中获取任务来进行执行的
 		if j, err = gcwp.enqueuer.Enqueue(jobName, params); err != nil {
 			return models.JobStats{}, err
 		}
@@ -319,11 +329,11 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 		return models.JobStats{}, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
-	// 获取工作状态
+	// 构造 job 的状态信息，将执行状态设置为 Pending准备执行
 	res := generateResult(j, job.JobKindGeneric, isUnique)
 	// Save data with async way. Once it fails to do, let it escape
 	// The client method may help if the job is still in progress when get stats of this job
-	// 消息会放入 statsManager 的 processChan 中
+	// 消息会放入 statsManager 的 processChan 中。推测有协程在监控着数据的变化
 	gcwp.statsManager.Save(res)
 
 	return res, nil
@@ -586,6 +596,7 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 
 	// 获取job 的类型，指扫描任务，GC，垃圾回收等
 	theJ := Wrap(jobType)
+	// theJ已经获取 job 的类型，下面会自动更具 job 的类型调用对应的验证函数。clair 的执行返回 nil
 	return theJ.Validate(params)
 }
 
@@ -699,6 +710,7 @@ func (gcwp *GoCraftWorkPool) handleRegisterStatusHook(data interface{}) error {
 		return errors.New("nil data interface")
 	}
 
+	// 类型判断
 	hook, ok := data.(*opm.HookData)
 	if !ok {
 		return errors.New("malformed hook object")
@@ -765,6 +777,7 @@ func generateResult(j *work.Job, jobKind string, isUnique bool) models.JobStats 
 			Status:      job.JobStatusPending,
 			EnqueueTime: j.EnqueuedAt,
 			UpdateTime:  time.Now().Unix(),
+			// 对应着数据库中 img_scan_job 表中的数据
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", j.ID),
 		},
 	}

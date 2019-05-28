@@ -29,6 +29,7 @@ type Interface interface {
 	// Returns:
 	//	JobStats: Job status info with ID and self link returned if job is successfully launched.
 	//  error   : Error returned if failed to launch the specified job.
+	// 处理 core 提交的 job
 	LaunchJob(req models.JobRequest) (models.JobStats, error)
 
 	// GetJob is used to handle the job stats query request.

@@ -108,17 +108,20 @@ func (ms *MessageServer) Start() error {
 						dt, _ := json.Marshal(m.Data)
 						json.Unmarshal(dt, policyObject)
 						converted = policyObject
+					//	 镜像扫描任务会有一个 hook_url
 					case opm.EventRegisterStatusHook:
 						// ignore error
 						hookObject := &opm.HookData{}
 						dt, _ := json.Marshal(m.Data)
 						json.Unmarshal(dt, hookObject)
+						// 将 jobid 以及 hool_url 存储在 converted 中
 						converted = hookObject
 					case opm.EventFireCommand:
 						// no need to convert []string
 						converted = m.Data
 					}
 					// 使用上述获取的回调处理函数对事件进行处理
+					// 可能是调用发送core
 					res := callback.Call([]reflect.Value{reflect.ValueOf(converted)})
 					e := res[0].Interface()
 					if e != nil {
@@ -167,6 +170,7 @@ func (ms *MessageServer) Start() error {
 }
 
 // Subscribe event with specified callback
+// 订阅具体事件，当事件发生时调用 指定的回调函数 callback
 func (ms *MessageServer) Subscribe(event string, callback interface{}) error {
 	if utils.IsEmptyStr(event) {
 		return errors.New("empty event is not allowed")

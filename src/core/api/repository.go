@@ -927,14 +927,18 @@ func (ra *RepositoryAPI) GetSignatures() {
 }
 
 // ScanImage handles request POST /api/repository/$repository/tags/$tag/scan to trigger image scan manually.
+// 启动镜像扫描
 func (ra *RepositoryAPI) ScanImage() {
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, scan is disabled.")
 		ra.RenderError(http.StatusServiceUnavailable, "")
 		return
 	}
+	// 获取存储库的名称
 	repoName := ra.GetString(":splat")
+	// 获取镜像的 tag
 	tag := ra.GetString(":tag")
+	// 从repository 中提取出 project Name
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
@@ -946,14 +950,17 @@ func (ra *RepositoryAPI) ScanImage() {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
+	// 检查请求是否授权
 	if !ra.SecurityCtx.IsAuthenticated() {
 		ra.HandleUnauthorized()
 		return
 	}
+	// 检查用户是否对此 project 拥有全部权限。主要是判断用户是否为项目管理员或系统管理员
 	if !ra.SecurityCtx.HasAllPerm(projectName) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
+	// 调用 core 工具箱中的触发镜像扫描任务
 	err = coreutils.TriggerImageScan(repoName, tag)
 	if err != nil {
 		log.Errorf("Error while calling job service to trigger image scan: %v", err)

@@ -153,6 +153,7 @@ func (wp *WorkerPool) JobWithOptions(name string, jobOpts JobOptions, fn interfa
 		jt.GenericHandler = gh
 	}
 
+	// 将 job 的名称和其处理函数联系起来
 	wp.jobTypes[name] = jt
 
 	for _, w := range wp.workers {
@@ -186,6 +187,7 @@ func (wp *WorkerPool) Start() {
 
 	// TODO: we should cleanup stale keys on startup from previously registered jobs
 	wp.writeConcurrencyControlsToRedis()
+	// 将已知的 job 类型写入 redis 中
 	go wp.writeKnownJobsToRedis()
 
 	for _, w := range wp.workers {

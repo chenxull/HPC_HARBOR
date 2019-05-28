@@ -22,13 +22,18 @@ import (
 
 // Wrap returns a new job.Interface based on the wrapped job handler reference.
 func Wrap(j interface{}) job.Interface {
+	// theType 是此结构体的名称，获取 j 的动态类型
 	theType := reflect.TypeOf(j)
 
+	// 如说是指针类型，将其转化为元素类型
 	if theType.Kind() == reflect.Ptr {
+		// 将指针类型所指向的实际数据赋值给 Type
 		theType = theType.Elem()
 	}
 
 	// Crate new
+	// 创建一个类型为 theType 的新的指针类型的数据
 	v := reflect.New(theType).Elem()
+	// 其是符合 job Interface 接口的
 	return v.Addr().Interface().(job.Interface)
 }

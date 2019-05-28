@@ -59,7 +59,7 @@ type JobStatsManager interface {
 	// 指定 job 的状态
 	SetJobStatus(jobID string, status string)
 
-	// Send command fro the specified job
+	// Send command for the specified job
 	//
 	// jobID string   : ID of the being retried job
 	// command string : the command applied to the job like stop/cancel

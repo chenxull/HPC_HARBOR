@@ -66,6 +66,7 @@ func UpdateAdminJobStatus(id int64, status string) error {
 		Status:     status,
 		UpdateTime: time.Now(),
 	}
+	// 如何确定更新哪张表
 	n, err := o.Update(&j, "Status", "UpdateTime")
 	if n == 0 {
 		log.Warningf("no records are updated when updating admin job %d", id)

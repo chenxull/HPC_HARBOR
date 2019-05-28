@@ -39,8 +39,11 @@ func NewEnqueuer(namespace string, pool *redis.Pool) *Enqueuer {
 // Example: e.Enqueue("send_email", work.Q{"addr": "test@example.com"})
 func (e *Enqueuer) Enqueue(jobName string, args map[string]interface{}) (*Job, error) {
 	job := &Job{
+		// 任务的名称
 		Name:       jobName,
+		// 唯一 ID 编号
 		ID:         makeIdentifier(),
+		// 入任务队列的时间
 		EnqueuedAt: nowEpochSeconds(),
 		Args:       args,
 	}
@@ -49,10 +52,11 @@ func (e *Enqueuer) Enqueue(jobName string, args map[string]interface{}) (*Job, e
 	if err != nil {
 		return nil, err
 	}
-
+	// 获取 redis 的连接
 	conn := e.Pool.Get()
 	defer conn.Close()
 
+	// 在job 数据写入到 redis 中，k 为名称，v 为 job 中的数据
 	if _, err := conn.Do("LPUSH", e.queuePrefix+jobName, rawJSON); err != nil {
 		return nil, err
 	}
@@ -202,6 +206,7 @@ func (e *Enqueuer) addToKnownJobs(conn redis.Conn, jobName string) error {
 		}
 	}
 	if needSadd {
+		// SADD 将指定成员添加到存储在键上的集合
 		if _, err := conn.Do("SADD", redisKeyKnownJobs(e.Namespace), jobName); err != nil {
 			return err
 		}

@@ -35,6 +35,7 @@ const (
 	periodicEnqueuerHorizon = 4 * time.Minute
 )
 
+// 周期性任务队列
 type periodicEnqueuer struct {
 	namespace        string
 	pool             *redis.Pool

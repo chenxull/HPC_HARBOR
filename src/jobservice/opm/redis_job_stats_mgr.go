@@ -138,7 +138,7 @@ func (rjs *RedisJobStatsManager) Save(jobStats models.JobStats) {
 		Op:   opSaveStats,
 		Data: jobStats,
 	}
-
+	// 将
 	rjs.processChan <- item
 }
 
@@ -197,6 +197,7 @@ func (rjs *RedisJobStatsManager) loop() {
 
 	for {
 		select {
+		// 用来接收处理通道中的数据
 		case item := <-rjs.processChan:
 			go func(item *queueItem) {
 				clearHookCache := false
@@ -206,6 +207,7 @@ func (rjs *RedisJobStatsManager) loop() {
 						logger.Warningf("Failed to process '%s' request with error: %s\n", item.Op, err)
 
 						// Retry after a random interval
+						// 尝试重新执行
 						go func() {
 							timer := time.NewTimer(time.Duration(backoff(item.Fails)) * time.Second)
 							defer timer.Stop()
@@ -653,16 +655,19 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 }
 
 func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
+	// 正常情况下， 从 core 提交来的 job 状态都为 pending
 	if jobStats.Stats == nil {
 		return errors.New("malformed job stats object")
 	}
 
+	// 获取连接
 	conn := rjs.redisPool.Get()
 	defer conn.Close()
-
+	// namespace : harbor_job_service_namespace
 	key := utils.KeyJobStats(rjs.namespace, jobStats.Stats.JobID)
 	args := make([]interface{}, 0)
 	args = append(args, key)
+	// 构建一个 job_stats 的数据，这些数据会保存到 redis 中
 	args = append(args,
 		"id", jobStats.Stats.JobID,
 		"name", jobStats.Stats.JobName,
@@ -686,10 +691,12 @@ func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
 		args = append(args, "die_at", jobStats.Stats.DieAt)
 	}
 
+	// 上游任务
 	if len(jobStats.Stats.UpstreamJobID) > 0 {
 		args = append(args, "upstream_job_id", jobStats.Stats.UpstreamJobID)
 	}
 
+	// 将 job 的stats 数据写入到 redis 中。将指定字段设置为存储在键上的散列中的各自值
 	conn.Send("HMSET", args...)
 	// If job kind is periodic job, expire time should not be set
 	// If job kind is scheduled job, expire time should be runAt+1day

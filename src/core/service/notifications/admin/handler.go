@@ -44,6 +44,7 @@ type Handler struct {
 }
 
 // Prepare ...
+// 将jobservice 发来请求中的数据赋值给 h
 func (h *Handler) Prepare() {
 	var data job_model.JobStatusChange
 	err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
@@ -76,6 +77,7 @@ func (h *Handler) Prepare() {
 func (h *Handler) HandleAdminJob() {
 	log.Infof("received admin job status update event: job-%d, status-%s", h.id, h.status)
 	// create the mapping relationship between the jobs in database and jobservice
+	// 为数据库中的 job 与 jobservice 创建联系
 	if err := dao.SetAdminJobUUID(h.id, h.UUID); err != nil {
 		h.HandleInternalServerError(err.Error())
 		return

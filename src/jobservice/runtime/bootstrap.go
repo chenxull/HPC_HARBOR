@@ -209,7 +209,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		// exit
 		return nil, err
 	}
-	// 注册各种类型的 job
+	// 注册各种类型的 job，这些工作都会在启动的时候被执行一遍
 	if err := redisWorkerPool.RegisterJobs(
 		map[string]interface{}{
 			job.ImageScanJob:    (*scan.ClairJob)(nil),
@@ -223,7 +223,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		return nil, err
 	}
 
-	//	启动redis 工作池
+	//	启动redis 工作池，开始处理任务
 	if err := redisWorkerPool.Start(); err != nil {
 		return nil, err
 	}

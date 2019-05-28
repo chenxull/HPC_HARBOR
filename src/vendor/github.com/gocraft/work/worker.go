@@ -110,12 +110,15 @@ func (w *worker) loop() {
 		case <-w.drainChan:
 			drained = true
 			timer.Reset(0)
+		//	worker定时获取任务
 		case <-timer.C:
+			// 从队列中获取任务
 			job, err := w.fetchJob()
 			if err != nil {
 				logError("worker.fetch", err)
 				timer.Reset(10 * time.Millisecond)
 			} else if job != nil {
+				// 开始处理获取到的 job
 				w.processJob(job)
 				consequtiveNoJobs = 0
 				timer.Reset(0)
@@ -146,9 +149,10 @@ func (w *worker) fetchJob() (*Job, error) {
 		scriptArgs = append(scriptArgs, s.redisJobs, s.redisJobsInProg, s.redisJobsPaused, s.redisJobsLock, s.redisJobsLockInfo, s.redisJobsMaxConcurrency) // KEYS[1-6 * N]
 	}
 	scriptArgs = append(scriptArgs, w.poolID) // ARGV[1]
+	// 连接到 redis
 	conn := w.pool.Get()
 	defer conn.Close()
-
+	// 从 redis 中获取指定类型的数据
 	values, err := redis.Values(w.redisFetchScript.Do(conn, scriptArgs...))
 	if err == redis.ErrNil {
 		return nil, nil
@@ -184,18 +188,23 @@ func (w *worker) fetchJob() (*Job, error) {
 }
 
 func (w *worker) processJob(job *Job) {
+	// 如果 job 是唯一的，执行完一次后需要删除
 	if job.Unique {
 		w.deleteUniqueJob(job)
 	}
 	var runErr error
+	// 获取 job的类型，比如说IMAGE_SCAN。这个在注册函数的时候已经存储好了。
 	jt := w.jobTypes[job.Name]
 	if jt == nil {
 		runErr = fmt.Errorf("stray job: no handler")
 		logError("process_job.stray", runErr)
 	} else {
+		// 每个 worker 都有一个 observer，将任务放入 观察通道中
 		w.observeStarted(job.Name, job.ID, job.Args)
 		job.observer = w.observer // for Checkin
+		// 调用处理函数
 		_, runErr = runJob(job, w.contextType, w.middleware, jt)
+		// 观察任务执行的情况
 		w.observeDone(job.Name, job.ID, runErr)
 	}
 
