@@ -1,11 +1,11 @@
 {
-  "headerBgColor": "",
+  "headerBgColor": "rgb(8,49,98)",
   "headerLogo": "",
   "loginBgImg": "",
-  "appTitle": "HPC hub",
+  "appTitle": "CNIC HUB",
   "project": {
-    "companyName": "",
-    "projectName": "",
+    "companyName": "CNIC",
+    "projectName": "HUB",
     "introduction": {
       "zh-cn": "",
       "es-es": "",
