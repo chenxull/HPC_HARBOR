@@ -39,7 +39,7 @@
         "core-js": "^2.5.4",
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
-        "ng-packagr": "^4.1.1",
+        "ng-packagr": "^10.1.1",
         "ngx-clipboard": "^11.1.1",
         "ngx-cookie": "^1.0.0",
         "ngx-markdown": "^6.2.0",
